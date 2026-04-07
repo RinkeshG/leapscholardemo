@@ -22,9 +22,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Leap Review — Pre-counselor SOP review",
+  title: "Leap Intelligence — Outcome Brief",
   description:
-    "AI-assisted SOP review for Leap Scholar counselors. Scores Statements of Purpose against program rubrics, flags weak claims and clichés, and drafts the counselor handoff.",
+    "An honest one-page outcome brief for Indian students applying abroad. Admit odds, visa odds, ROI, and the picks a biased counselor won't mention. Built on Leap Scholar's outcome data.",
 };
 
 export default function RootLayout({

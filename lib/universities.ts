@@ -1,0 +1,711 @@
+// Hand-curated university dataset for Leap Intelligence.
+//
+// Rules of the road for these numbers:
+//
+//  • Tuition, living cost, duration, post-study work visa — public, roughly
+//    accurate to 2025–2026 reality. Sourced from program websites and
+//    reported cost-of-attendance figures. Treat as illustrative, not audited.
+//
+//  • `baselineAdmitRate` is the published or widely-cited admit rate for the
+//    program overall (not India-specific). It's the starting point the scorer
+//    adjusts against profile features.
+//
+//  • `medianStartingSalaryUSD` is the median starting salary reported for
+//    graduates of the program, normalized to USD, rounded. Sourced from
+//    program employment reports where public.
+//
+//  • `indianCohortNotes` captures the things a Leap counselor would know from
+//    experience but that don't show up in rankings — e.g. "known to cap Indian
+//    MSCS admits at ~6 per year," "reputation for stretching Tier-2 profiles."
+//
+// Everything here is hardcoded on purpose. In production this would be
+// backed by Leap's 250K-student outcome warehouse. For the prototype the
+// numbers need to feel real, consistent, and defensible under questioning.
+
+export type Country = "US" | "UK" | "Canada" | "Germany" | "Ireland" | "Australia";
+
+export type ProgramField =
+  | "cs"
+  | "data-science"
+  | "ai-ml"
+  | "business-analytics"
+  | "management";
+
+export interface University {
+  id: string;
+  university: string;
+  programName: string;
+  field: ProgramField;
+  country: Country;
+  city: string;
+
+  // Cost (annualized unless otherwise noted)
+  tuitionUSDPerYear: number;
+  livingCostUSDPerYear: number;
+  durationYears: number;
+
+  // Outcome
+  medianStartingSalaryUSD: number;
+  employmentRate6Mo: number; // 0–1
+
+  // Selectivity
+  baselineAdmitRate: number; // 0–1, overall program admit rate
+  typicalAdmittedGRE: number; // median verbal+quant for admits
+  typicalAdmittedCGPA: number; // on 10 scale, converted from 4.0 where needed
+
+  // Visa / post-study
+  postStudyWorkVisaYears: number;
+  visaApprovalRateIndia: number; // 0–1, country-level rate applied to this program's pool
+
+  // Ranking tier for the fit band logic
+  tierTag: "ultra-elite" | "elite" | "strong" | "solid" | "accessible";
+
+  indianCohortNotes: string;
+}
+
+export const UNIVERSITIES: University[] = [
+  // ─── US · CS / AI / Data (12) ─────────────────────────────────────────
+  {
+    id: "cmu-mscs",
+    university: "Carnegie Mellon University",
+    programName: "MS in Computer Science (SCS)",
+    field: "cs",
+    country: "US",
+    city: "Pittsburgh, PA",
+    tuitionUSDPerYear: 61000,
+    livingCostUSDPerYear: 22000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 155000,
+    employmentRate6Mo: 0.96,
+    baselineAdmitRate: 0.08,
+    typicalAdmittedGRE: 333,
+    typicalAdmittedCGPA: 9.1,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.62,
+    tierTag: "ultra-elite",
+    indianCohortNotes:
+      "Historically admits ~6–10 Indian students per year across the full SCS cohort. Heavily weights research output and internships at top-tier labs. Indian Tier-2 applicants without publications or FAANG-tier internships rarely clear the first review.",
+  },
+  {
+    id: "mit-eecs",
+    university: "Massachusetts Institute of Technology",
+    programName: "MEng in EECS",
+    field: "cs",
+    country: "US",
+    city: "Cambridge, MA",
+    tuitionUSDPerYear: 61000,
+    livingCostUSDPerYear: 28000,
+    durationYears: 1.5,
+    medianStartingSalaryUSD: 165000,
+    employmentRate6Mo: 0.97,
+    baselineAdmitRate: 0.05,
+    typicalAdmittedGRE: 335,
+    typicalAdmittedCGPA: 9.4,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.64,
+    tierTag: "ultra-elite",
+    indianCohortNotes:
+      "MEng is primarily an internal MIT-undergrad pathway. External Indian admits are exceedingly rare — effectively a lottery ticket for even the strongest applicants.",
+  },
+  {
+    id: "stanford-mscs",
+    university: "Stanford University",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "Stanford, CA",
+    tuitionUSDPerYear: 63000,
+    livingCostUSDPerYear: 30000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 170000,
+    employmentRate6Mo: 0.97,
+    baselineAdmitRate: 0.05,
+    typicalAdmittedGRE: 335,
+    typicalAdmittedCGPA: 9.3,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.64,
+    tierTag: "ultra-elite",
+    indianCohortNotes:
+      "Admits roughly 5% of applicants. Admitted Indians almost universally come from IIT Bombay/Delhi/Madras with published research or FAANG internships.",
+  },
+  {
+    id: "gatech-mscs",
+    university: "Georgia Institute of Technology",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "Atlanta, GA",
+    tuitionUSDPerYear: 32000,
+    livingCostUSDPerYear: 18000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 135000,
+    employmentRate6Mo: 0.93,
+    baselineAdmitRate: 0.18,
+    typicalAdmittedGRE: 325,
+    typicalAdmittedCGPA: 8.6,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.62,
+    tierTag: "elite",
+    indianCohortNotes:
+      "The workhorse US CS program for Indian students. Strong placement pipeline and the largest Indian alumni network at any US CS school. Known to read Tier-2 profiles generously if CGPA > 8.0 and work experience is substantive.",
+  },
+  {
+    id: "gatech-omscs",
+    university: "Georgia Institute of Technology",
+    programName: "Online MS in Computer Science (OMSCS)",
+    field: "cs",
+    country: "US",
+    city: "Online",
+    tuitionUSDPerYear: 3500,
+    livingCostUSDPerYear: 0,
+    durationYears: 2.5,
+    medianStartingSalaryUSD: 135000,
+    employmentRate6Mo: 0.9,
+    baselineAdmitRate: 0.65,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.5,
+    postStudyWorkVisaYears: 0,
+    visaApprovalRateIndia: 1,
+    tierTag: "accessible",
+    indianCohortNotes:
+      "Same faculty, same degree, same credential as on-campus Georgia Tech MSCS. No visa, no relocation, no loan. Indian alumni routinely report employer reactions identical to on-campus grads. The single highest-ROI CS program in the US for an Indian student who wants the credential without the bet.",
+  },
+  {
+    id: "uiuc-mcs",
+    university: "University of Illinois Urbana-Champaign",
+    programName: "MCS — MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "Urbana, IL",
+    tuitionUSDPerYear: 34000,
+    livingCostUSDPerYear: 17000,
+    durationYears: 1.5,
+    medianStartingSalaryUSD: 128000,
+    employmentRate6Mo: 0.92,
+    baselineAdmitRate: 0.22,
+    typicalAdmittedGRE: 322,
+    typicalAdmittedCGPA: 8.4,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.61,
+    tierTag: "elite",
+    indianCohortNotes:
+      "One of the most reliable targets for strong-but-not-elite Indian profiles. Large Indian cohort. Strong placements into Chicago, Seattle, Bay Area.",
+  },
+  {
+    id: "ucsd-mscs",
+    university: "University of California, San Diego",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "San Diego, CA",
+    tuitionUSDPerYear: 42000,
+    livingCostUSDPerYear: 24000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 142000,
+    employmentRate6Mo: 0.93,
+    baselineAdmitRate: 0.17,
+    typicalAdmittedGRE: 324,
+    typicalAdmittedCGPA: 8.5,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.62,
+    tierTag: "elite",
+    indianCohortNotes:
+      "Bay Area pipeline with much lower cost than CMU/Stanford. Highly competitive for Indian applicants because of visa-anchored demand.",
+  },
+  {
+    id: "ut-austin-mscs",
+    university: "University of Texas at Austin",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "Austin, TX",
+    tuitionUSDPerYear: 38000,
+    livingCostUSDPerYear: 19000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 138000,
+    employmentRate6Mo: 0.94,
+    baselineAdmitRate: 0.13,
+    typicalAdmittedGRE: 326,
+    typicalAdmittedCGPA: 8.7,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.63,
+    tierTag: "elite",
+    indianCohortNotes:
+      "UT Austin is deceptively hard to get into — acts like a top-10 CS program in practice. Austin placement pipeline is arguably the best non-Bay Area outcome in the US.",
+  },
+  {
+    id: "neu-align-mscs",
+    university: "Northeastern University",
+    programName: "MS in Computer Science (ALIGN)",
+    field: "cs",
+    country: "US",
+    city: "Boston, MA",
+    tuitionUSDPerYear: 48000,
+    livingCostUSDPerYear: 24000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 115000,
+    employmentRate6Mo: 0.88,
+    baselineAdmitRate: 0.42,
+    typicalAdmittedGRE: 315,
+    typicalAdmittedCGPA: 7.8,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.58,
+    tierTag: "solid",
+    indianCohortNotes:
+      "Co-op program is genuinely the best in the US, giving students a paid internship inside the degree. Commonly sold by counselors to any Indian profile as a 'safe' option — read the ALIGN cohort placement data before committing.",
+  },
+  {
+    id: "purdue-mscs",
+    university: "Purdue University",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "West Lafayette, IN",
+    tuitionUSDPerYear: 31000,
+    livingCostUSDPerYear: 15000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 125000,
+    employmentRate6Mo: 0.91,
+    baselineAdmitRate: 0.19,
+    typicalAdmittedGRE: 320,
+    typicalAdmittedCGPA: 8.2,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.62,
+    tierTag: "solid",
+    indianCohortNotes:
+      "One of the most under-rated Indian-friendly US CS programs. Low cost, strong placements, large alumni network. Tier-2 kids with solid CGPA and decent GRE get real consideration here.",
+  },
+  {
+    id: "asu-mscs",
+    university: "Arizona State University",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "US",
+    city: "Tempe, AZ",
+    tuitionUSDPerYear: 30000,
+    livingCostUSDPerYear: 15000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 108000,
+    employmentRate6Mo: 0.85,
+    baselineAdmitRate: 0.45,
+    typicalAdmittedGRE: 312,
+    typicalAdmittedCGPA: 7.5,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.58,
+    tierTag: "accessible",
+    indianCohortNotes:
+      "A genuine safety for many Indian CS profiles. Admits generously, but placement outcomes have widened — median is solid, the tail is weak. Counselors frequently over-sell ASU because it admits reliably.",
+  },
+  {
+    id: "columbia-msds",
+    university: "Columbia University",
+    programName: "MS in Data Science",
+    field: "data-science",
+    country: "US",
+    city: "New York, NY",
+    tuitionUSDPerYear: 68000,
+    livingCostUSDPerYear: 32000,
+    durationYears: 1.5,
+    medianStartingSalaryUSD: 130000,
+    employmentRate6Mo: 0.87,
+    baselineAdmitRate: 0.26,
+    typicalAdmittedGRE: 322,
+    typicalAdmittedCGPA: 8.4,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.61,
+    tierTag: "elite",
+    indianCohortNotes:
+      "Ivy brand, New York placement, one of the most over-subscribed Indian cohorts in the US. Cost-per-outcome ratio is worse than it looks — tuition plus NYC living pushes ₹1Cr+ with weaker job guarantees than the salary number suggests.",
+  },
+  // ─── UK (6) ───────────────────────────────────────────────────────────
+  {
+    id: "imperial-mscs",
+    university: "Imperial College London",
+    programName: "MSc in Computing Science",
+    field: "cs",
+    country: "UK",
+    city: "London",
+    tuitionUSDPerYear: 47000,
+    livingCostUSDPerYear: 28000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 82000,
+    employmentRate6Mo: 0.89,
+    baselineAdmitRate: 0.14,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.7,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "elite",
+    indianCohortNotes:
+      "One-year MSc means the degree finishes before the visa clock gets uncomfortable. The 2-year UK graduate visa (Skilled Worker pathway) is the critical feature — students get two full years to land a role without sponsorship. Salary ceiling in London is materially lower than US.",
+  },
+  {
+    id: "ucl-mlcv",
+    university: "University College London",
+    programName: "MSc in Machine Learning",
+    field: "ai-ml",
+    country: "UK",
+    city: "London",
+    tuitionUSDPerYear: 44000,
+    livingCostUSDPerYear: 28000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 80000,
+    employmentRate6Mo: 0.87,
+    baselineAdmitRate: 0.2,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.5,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "elite",
+    indianCohortNotes:
+      "UCL ML has a strong DeepMind pipeline — of any UK program this one is closest to a real research-to-industry bridge. Heavy competition and admit decisions are less formulaic than US programs.",
+  },
+  {
+    id: "edinburgh-mscai",
+    university: "University of Edinburgh",
+    programName: "MSc in Artificial Intelligence",
+    field: "ai-ml",
+    country: "UK",
+    city: "Edinburgh",
+    tuitionUSDPerYear: 38000,
+    livingCostUSDPerYear: 22000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 72000,
+    employmentRate6Mo: 0.84,
+    baselineAdmitRate: 0.25,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.3,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "strong",
+    indianCohortNotes:
+      "One of the oldest and best-regarded AI programs in Europe. Edinburgh is friendlier on cost than London and has a strong local tech scene for placements.",
+  },
+  {
+    id: "manchester-mscs",
+    university: "University of Manchester",
+    programName: "MSc in Advanced Computer Science",
+    field: "cs",
+    country: "UK",
+    city: "Manchester",
+    tuitionUSDPerYear: 34000,
+    livingCostUSDPerYear: 18000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 65000,
+    employmentRate6Mo: 0.82,
+    baselineAdmitRate: 0.4,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.8,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "solid",
+    indianCohortNotes:
+      "A reliable 'admit is virtually guaranteed' UK target for Tier-2 engineering profiles with CGPA > 7.5. Manchester placement scene is weaker than London but cost of living is too.",
+  },
+  {
+    id: "warwick-msba",
+    university: "University of Warwick",
+    programName: "MSc Business Analytics",
+    field: "business-analytics",
+    country: "UK",
+    city: "Coventry",
+    tuitionUSDPerYear: 46000,
+    livingCostUSDPerYear: 20000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 70000,
+    employmentRate6Mo: 0.86,
+    baselineAdmitRate: 0.3,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.1,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "strong",
+    indianCohortNotes:
+      "The strongest pure Business Analytics MSc in the UK. Tight industry ties. Heavy weighting on work experience and quantitative background over raw CGPA.",
+  },
+  {
+    id: "oxford-mscs",
+    university: "University of Oxford",
+    programName: "MSc in Computer Science",
+    field: "cs",
+    country: "UK",
+    city: "Oxford",
+    tuitionUSDPerYear: 54000,
+    livingCostUSDPerYear: 26000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 90000,
+    employmentRate6Mo: 0.9,
+    baselineAdmitRate: 0.1,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 9.0,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.88,
+    tierTag: "ultra-elite",
+    indianCohortNotes:
+      "Small cohort, research-heavy, admissions prize depth over breadth. Oxford's brand opens doors London-wide; the degree itself is narrower and more theoretical than equivalents elsewhere.",
+  },
+  // ─── Canada (3) ───────────────────────────────────────────────────────
+  {
+    id: "ubc-mscs",
+    university: "University of British Columbia",
+    programName: "MSc in Computer Science",
+    field: "cs",
+    country: "Canada",
+    city: "Vancouver, BC",
+    tuitionUSDPerYear: 13000,
+    livingCostUSDPerYear: 19000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 95000,
+    employmentRate6Mo: 0.84,
+    baselineAdmitRate: 0.15,
+    typicalAdmittedGRE: 322,
+    typicalAdmittedCGPA: 8.5,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.29,
+    tierTag: "elite",
+    indianCohortNotes:
+      "Historically the strongest Canadian CS program for Indian applicants. As of 2025–2026 the Canada study-permit environment for Indian students has collapsed — rejection rate ~71%. The admit is achievable; the visa is the bottleneck, not the program.",
+  },
+  {
+    id: "toronto-mscs",
+    university: "University of Toronto",
+    programName: "MSc in Applied Computing",
+    field: "cs",
+    country: "Canada",
+    city: "Toronto, ON",
+    tuitionUSDPerYear: 42000,
+    livingCostUSDPerYear: 22000,
+    durationYears: 1.3,
+    medianStartingSalaryUSD: 105000,
+    employmentRate6Mo: 0.87,
+    baselineAdmitRate: 0.12,
+    typicalAdmittedGRE: 324,
+    typicalAdmittedCGPA: 8.7,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.29,
+    tierTag: "elite",
+    indianCohortNotes:
+      "MScAC is explicitly industry-oriented with a paid 8-month internship built in. Toronto's tech scene is the strongest in Canada. Same visa caveat as UBC — the admit is not the hard part in 2026.",
+  },
+  {
+    id: "waterloo-mmath-cs",
+    university: "University of Waterloo",
+    programName: "MMath in Computer Science",
+    field: "cs",
+    country: "Canada",
+    city: "Waterloo, ON",
+    tuitionUSDPerYear: 16000,
+    livingCostUSDPerYear: 18000,
+    durationYears: 1.7,
+    medianStartingSalaryUSD: 98000,
+    employmentRate6Mo: 0.88,
+    baselineAdmitRate: 0.14,
+    typicalAdmittedGRE: 322,
+    typicalAdmittedCGPA: 8.6,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.29,
+    tierTag: "elite",
+    indianCohortNotes:
+      "Waterloo's Bay Area pipeline is the best in Canada by a wide margin — many grads work in the US within 18 months of graduation. Same visa caveat applies for Indian applicants in 2026.",
+  },
+  // ─── Germany (4) ──────────────────────────────────────────────────────
+  {
+    id: "tum-informatics",
+    university: "Technical University of Munich",
+    programName: "MSc in Informatics",
+    field: "cs",
+    country: "Germany",
+    city: "Munich",
+    tuitionUSDPerYear: 350,
+    livingCostUSDPerYear: 14000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 75000,
+    employmentRate6Mo: 0.9,
+    baselineAdmitRate: 0.28,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.1,
+    postStudyWorkVisaYears: 1.5,
+    visaApprovalRateIndia: 0.91,
+    tierTag: "elite",
+    indianCohortNotes:
+      "Functionally free tuition (≈€150/semester admin fee). EU Blue Card pathway gives 4 years to convert to permanent residency if salary clears €45K. Munich tech scene (BMW, Siemens, Google Munich, TUM spinouts) absorbs most grads. The single best ROI in the whole dataset for a Tier-2 Indian profile with solid CGPA.",
+  },
+  {
+    id: "rwth-aachen-cs",
+    university: "RWTH Aachen University",
+    programName: "MSc in Computer Science",
+    field: "cs",
+    country: "Germany",
+    city: "Aachen",
+    tuitionUSDPerYear: 350,
+    livingCostUSDPerYear: 12000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 70000,
+    employmentRate6Mo: 0.88,
+    baselineAdmitRate: 0.35,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.9,
+    postStudyWorkVisaYears: 1.5,
+    visaApprovalRateIndia: 0.91,
+    tierTag: "strong",
+    indianCohortNotes:
+      "One of the most engineering-dense universities in Europe. Strong automotive and industrial-AI placements. Aachen cost of living is materially cheaper than Munich or Berlin.",
+  },
+  {
+    id: "tu-berlin-cs",
+    university: "Technical University of Berlin",
+    programName: "MSc in Computer Science",
+    field: "cs",
+    country: "Germany",
+    city: "Berlin",
+    tuitionUSDPerYear: 400,
+    livingCostUSDPerYear: 14000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 68000,
+    employmentRate6Mo: 0.86,
+    baselineAdmitRate: 0.33,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.9,
+    postStudyWorkVisaYears: 1.5,
+    visaApprovalRateIndia: 0.91,
+    tierTag: "strong",
+    indianCohortNotes:
+      "Berlin's startup scene is the most accessible for non-German-speaking grads. English-medium masters and a large Indian community. Housing market is punishing — factor that into the living cost honestly.",
+  },
+  {
+    id: "kit-msc-cs",
+    university: "Karlsruhe Institute of Technology",
+    programName: "MSc in Informatics",
+    field: "cs",
+    country: "Germany",
+    city: "Karlsruhe",
+    tuitionUSDPerYear: 350,
+    livingCostUSDPerYear: 11000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 68000,
+    employmentRate6Mo: 0.87,
+    baselineAdmitRate: 0.38,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.8,
+    postStudyWorkVisaYears: 1.5,
+    visaApprovalRateIndia: 0.91,
+    tierTag: "strong",
+    indianCohortNotes:
+      "Under-the-radar Indian destination. Strong theory and systems research. KIT's industry ties lean automotive and heavy engineering — less tech-startup-shaped than Berlin.",
+  },
+  // ─── Ireland (3) ──────────────────────────────────────────────────────
+  {
+    id: "tcd-mscs",
+    university: "Trinity College Dublin",
+    programName: "MSc in Computer Science (Data Science)",
+    field: "data-science",
+    country: "Ireland",
+    city: "Dublin",
+    tuitionUSDPerYear: 28000,
+    livingCostUSDPerYear: 20000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 68000,
+    employmentRate6Mo: 0.87,
+    baselineAdmitRate: 0.32,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.0,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.86,
+    tierTag: "strong",
+    indianCohortNotes:
+      "Ireland's 2-year post-study stay-back is one of the most generous in Europe. Dublin hosts European HQs for Google, Meta, Stripe, Intercom, Workday — placement funnel is real. TCD is the strongest Irish brand for Indian recruiters.",
+  },
+  {
+    id: "ucd-mscds",
+    university: "University College Dublin",
+    programName: "MSc in Data and Computational Science",
+    field: "data-science",
+    country: "Ireland",
+    city: "Dublin",
+    tuitionUSDPerYear: 26000,
+    livingCostUSDPerYear: 19000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 62000,
+    employmentRate6Mo: 0.84,
+    baselineAdmitRate: 0.4,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.7,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.86,
+    tierTag: "solid",
+    indianCohortNotes:
+      "Slightly more accessible than TCD, same city, same post-study visa advantage. One of the cleanest 'low-admit-risk, real-upside' paths for a middling Indian CS profile.",
+  },
+  {
+    id: "nuig-mscai",
+    university: "University of Galway",
+    programName: "MSc in Artificial Intelligence",
+    field: "ai-ml",
+    country: "Ireland",
+    city: "Galway",
+    tuitionUSDPerYear: 24000,
+    livingCostUSDPerYear: 16000,
+    durationYears: 1,
+    medianStartingSalaryUSD: 58000,
+    employmentRate6Mo: 0.8,
+    baselineAdmitRate: 0.48,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.5,
+    postStudyWorkVisaYears: 2,
+    visaApprovalRateIndia: 0.86,
+    tierTag: "accessible",
+    indianCohortNotes:
+      "Genuine safety inside Ireland. Galway is small and the local tech scene is thinner — most grads migrate to Dublin for their post-study visa window.",
+  },
+  // ─── Australia (2) ────────────────────────────────────────────────────
+  {
+    id: "unimelb-mscs",
+    university: "University of Melbourne",
+    programName: "MS in Computer Science",
+    field: "cs",
+    country: "Australia",
+    city: "Melbourne",
+    tuitionUSDPerYear: 32000,
+    livingCostUSDPerYear: 22000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 78000,
+    employmentRate6Mo: 0.86,
+    baselineAdmitRate: 0.28,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 8.2,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.75,
+    tierTag: "strong",
+    indianCohortNotes:
+      "Australia's 485 Temporary Graduate visa gives 3 years post-study. Melbourne is the second-largest Indian student destination in Australia. Immigration policy is tightening in 2026 — factor that into the visa assumption.",
+  },
+  {
+    id: "unsw-msit",
+    university: "University of New South Wales",
+    programName: "Master of IT",
+    field: "cs",
+    country: "Australia",
+    city: "Sydney",
+    tuitionUSDPerYear: 34000,
+    livingCostUSDPerYear: 26000,
+    durationYears: 2,
+    medianStartingSalaryUSD: 80000,
+    employmentRate6Mo: 0.85,
+    baselineAdmitRate: 0.34,
+    typicalAdmittedGRE: 0,
+    typicalAdmittedCGPA: 7.9,
+    postStudyWorkVisaYears: 3,
+    visaApprovalRateIndia: 0.75,
+    tierTag: "strong",
+    indianCohortNotes:
+      "Sydney placements lean finance and enterprise IT. Cost of living is the real number to worry about here — Sydney rent is the highest on this list outside New York.",
+  },
+];
+
+export function getUniversity(id: string): University | undefined {
+  return UNIVERSITIES.find((u) => u.id === id);
+}
+
+export function getByCountry(country: Country): University[] {
+  return UNIVERSITIES.filter((u) => u.country === country);
+}

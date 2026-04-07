@@ -1,93 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { ReviewForm } from "@/components/ReviewForm";
-import { ReviewReport } from "@/components/ReviewReport";
-import { ReviewSkeleton, type StageProgress } from "@/components/ReviewSkeleton";
+import { IntakeForm } from "@/components/IntakeForm";
+import { OutcomeBrief } from "@/components/OutcomeBrief";
+import { BriefSkeleton } from "@/components/BriefSkeleton";
 import { MethodologyDrawer } from "@/components/MethodologyDrawer";
-import { reviewMethodology } from "@/lib/review-methodology";
-import { PROGRAM_OPTIONS } from "@/lib/rubrics";
-import type { ReviewRequest, ReviewResponse } from "@/lib/review-types";
+import { briefMethodology } from "@/lib/methodology";
+import type { StudentProfile } from "@/lib/profile";
+import type { BriefResponse } from "@/lib/brief-types";
 
-type View = "landing" | "report";
+type View = "landing" | "brief";
 
 export default function Page() {
   const [view, setView] = useState<View>("landing");
-  const [request, setRequest] = useState<ReviewRequest | null>(null);
-  const [data, setData] = useState<ReviewResponse | null>(null);
-  const [previousReport, setPreviousReport] = useState<
-    ReviewResponse["report"] | null
-  >(null);
+  const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [data, setData] = useState<BriefResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [methodologyOpen, setMethodologyOpen] = useState(false);
-  const [progress, setProgress] = useState<StageProgress[]>(initialProgress());
 
-  async function handleSubmit(req: ReviewRequest) {
-    setRequest(req);
+  async function handleSubmit(p: StudentProfile) {
+    setProfile(p);
     setError(null);
     setLoading(true);
-    setView("report");
+    setView("brief");
     setData(null);
-    setProgress(initialProgress());
     try {
-      const res = await fetch("/api/review-sop-stream", {
+      const res = await fetch("/api/generate-brief", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req),
+        body: JSON.stringify({ profile: p }),
       });
-      if (!res.ok || !res.body) {
+      if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || `Request failed (${res.status})`);
       }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let done = false;
-      let final: ReviewResponse | null = null;
-      let streamErr: string | null = null;
-      while (!done) {
-        const { value, done: rdone } = await reader.read();
-        done = rdone;
-        if (value) buffer += decoder.decode(value, { stream: true });
-        let nl;
-        while ((nl = buffer.indexOf("\n")) !== -1) {
-          const line = buffer.slice(0, nl).trim();
-          buffer = buffer.slice(nl + 1);
-          if (!line) continue;
-          let evt: unknown;
-          try {
-            evt = JSON.parse(line);
-          } catch {
-            continue;
-          }
-          if (!evt || typeof evt !== "object") continue;
-          const e = evt as Record<string, unknown>;
-          if (e.type === "progress") {
-            setProgress((cur) =>
-              cur.map((s) =>
-                s.id === e.stage
-                  ? {
-                      ...s,
-                      status: e.phase === "end" ? "done" : "running",
-                      ms: typeof e.ms === "number" ? e.ms : s.ms,
-                    }
-                  : s,
-              ),
-            );
-          } else if (e.type === "done") {
-            final = {
-              report: e.report as ReviewResponse["report"],
-              latencyMs: (e.latencyMs as number) ?? 0,
-            };
-          } else if (e.type === "error") {
-            streamErr = (e.error as string) ?? "Pipeline failed";
-          }
-        }
-      }
-      if (streamErr) throw new Error(streamErr);
-      if (!final) throw new Error("Stream ended without a result");
-      setData(final);
+      const json: BriefResponse = await res.json();
+      setData(json);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
       setView("landing");
@@ -96,21 +45,8 @@ export default function Page() {
     }
   }
 
-  function handleEdit() {
-    setView("landing");
-  }
-
-  function handleRevise() {
-    // User wants to submit a revised draft. Stash current report so the new
-    // report can render against it as a delta.
-    if (data?.report) setPreviousReport(data.report);
-    setView("landing");
-  }
-
   function handleNew() {
-    setRequest(null);
     setData(null);
-    setPreviousReport(null);
     setError(null);
     setView("landing");
   }
@@ -119,25 +55,21 @@ export default function Page() {
     <div className="min-h-screen bg-surface">
       <TopBar
         onOpenMethodology={() => setMethodologyOpen(true)}
-        onHome={view === "report" ? handleNew : null}
+        onHome={view === "brief" ? handleNew : null}
       />
 
       {view === "landing" ? (
         <Landing
-          initial={request}
+          initial={profile}
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
         />
       ) : (
-        <ReportView
-          request={request}
+        <BriefView
+          profile={profile}
           data={data}
-          previousReport={previousReport}
           loading={loading}
-          progress={progress}
-          onEdit={handleEdit}
-          onRevise={handleRevise}
           onNew={handleNew}
           onOpenMethodology={() => setMethodologyOpen(true)}
         />
@@ -146,13 +78,15 @@ export default function Page() {
       <MethodologyDrawer
         open={methodologyOpen}
         onClose={() => setMethodologyOpen(false)}
-        items={reviewMethodology}
-        title="How Leap Review works"
-        eyebrow="Leap Review · Pipeline"
+        items={briefMethodology}
+        title="How Leap Intelligence works"
+        eyebrow="Methodology"
       />
     </div>
   );
 }
+
+// ── Top bar ────────────────────────────────────────────────
 
 function TopBar({
   onOpenMethodology,
@@ -176,10 +110,10 @@ function TopBar({
           </div>
           <div className="flex items-baseline gap-3">
             <div className="font-display text-navy font-bold text-[18px] tracking-tighter2 group-hover:text-purple transition-colors">
-              Leap Review
+              Leap Intelligence
             </div>
             <div className="hidden sm:block eyebrow border-l border-rule pl-3">
-              Free SOP feedback by Leap Scholar
+              Outcome Brief · by Leap Scholar
             </div>
           </div>
         </button>
@@ -196,7 +130,7 @@ function TopBar({
   );
 }
 
-// ── Landing view ───────────────────────────────────────────
+// ── Landing ────────────────────────────────────────────────
 
 function Landing({
   initial,
@@ -204,8 +138,8 @@ function Landing({
   loading,
   error,
 }: {
-  initial: ReviewRequest | null;
-  onSubmit: (r: ReviewRequest) => void;
+  initial: StudentProfile | null;
+  onSubmit: (p: StudentProfile) => void;
   loading: boolean;
   error: string | null;
 }) {
@@ -214,34 +148,30 @@ function Landing({
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 eyebrow !text-purple mb-5 bg-purple-wash ring-1 ring-purple-pale rounded-full px-3 py-1.5">
           <span className="w-1.5 h-1.5 bg-purple rounded-full" />
-          For Indian students applying abroad
+          For Indian undergrads thinking about studying abroad
         </div>
         <h1 className="font-display text-[36px] sm:text-display font-bold text-navy tracking-tighter2 leading-[1.05]">
-          Honest feedback on your SOP,
+          Will you actually get in,
           <br />
-          <span className="text-purple">before you hit submit.</span>
+          <span className="text-purple">and is it worth it?</span>
         </h1>
         <p className="text-lede text-ink-muted mt-5 max-w-[600px] mx-auto">
-          Paste your draft. We score it against admitted Indian applicants to
-          your target program, flag the clichés and weak claims, and tell you
-          the three things to fix next — like a strong older sibling who&apos;s
-          been through this would.
+          Tell us about yourself. We&apos;ll match your profile against the
+          last three years of Indian outcomes and build you an honest one-page
+          brief — admit odds, visa odds, ROI, and the picks a biased counselor
+          won&apos;t mention.
         </p>
         <div className="flex items-center justify-center gap-5 mt-6">
-          <Stat label="Programs" value={String(PROGRAM_OPTIONS.length)} />
+          <Stat label="Programs scored" value="30" />
           <Dot />
-          <Stat label="Dimensions scored" value="6" />
+          <Stat label="Countries" value="6" />
           <Dot />
           <Stat label="Cost" value="Free" />
         </div>
       </div>
 
       <div className="bg-white ring-1 ring-rule-soft rounded-2xl shadow-cardRaised p-7 sm:p-9">
-        <ReviewForm
-          initial={initial}
-          onSubmit={onSubmit}
-          loading={loading}
-        />
+        <IntakeForm initial={initial} onSubmit={onSubmit} loading={loading} />
         {error && (
           <div className="mt-4 text-caption text-danger border border-danger/30 bg-danger-tint/60 rounded-lg px-3 py-2.5">
             {error}
@@ -250,7 +180,7 @@ function Landing({
       </div>
 
       <p className="text-center text-caption text-ink-subtle mt-6 leading-relaxed">
-        Your draft stays in your browser. Nothing is saved or shared.
+        No accounts. No saved data. No partner-university bias.
       </p>
     </main>
   );
@@ -271,74 +201,39 @@ function Dot() {
   return <span className="w-1 h-1 bg-rule-strong rounded-full" />;
 }
 
-// ── Report view ────────────────────────────────────────────
+// ── Brief view ─────────────────────────────────────────────
 
-function initialProgress(): StageProgress[] {
-  return [
-    { id: "cliche-scan", label: "Scanning for clichés", status: "pending" },
-    {
-      id: "scoring",
-      label: "Scoring against admitted baseline",
-      status: "pending",
-    },
-    {
-      id: "annotation",
-      label: "Annotating issues in your draft",
-      status: "pending",
-    },
-  ];
-}
-
-function ReportView({
-  request,
+function BriefView({
+  profile,
   data,
-  previousReport,
   loading,
-  progress,
-  onEdit,
-  onRevise,
   onNew,
   onOpenMethodology,
 }: {
-  request: ReviewRequest | null;
-  data: ReviewResponse | null;
-  previousReport: ReviewResponse["report"] | null;
+  profile: StudentProfile | null;
+  data: BriefResponse | null;
   loading: boolean;
-  progress: StageProgress[];
-  onEdit: () => void;
-  onRevise: () => void;
   onNew: () => void;
   onOpenMethodology: () => void;
 }) {
   return (
-    <main className="max-w-[1200px] mx-auto px-6 py-8">
-      {request && (
+    <main className="max-w-[1100px] mx-auto px-6 py-8">
+      {profile && (
         <div className="mb-5 flex items-center justify-between gap-4 flex-wrap no-print">
-          <RequestChip request={request} />
+          <ProfileChip profile={profile} />
           <div className="flex items-center gap-2">
-            <ChromeButton onClick={onEdit} disabled={loading}>
-              Edit draft
-            </ChromeButton>
-            <ChromeButton
-              onClick={onRevise}
-              disabled={loading}
-              variant="primary"
-            >
-              Submit revised draft
-            </ChromeButton>
             <ChromeButton onClick={onNew} disabled={loading}>
-              New review
+              Start a new brief
             </ChromeButton>
           </div>
         </div>
       )}
 
       {loading || !data ? (
-        <ReviewSkeleton progress={progress} />
+        <BriefSkeleton />
       ) : (
-        <ReviewReport
-          data={data}
-          previousReport={previousReport}
+        <OutcomeBrief
+          brief={data.brief}
           onOpenMethodology={onOpenMethodology}
         />
       )}
@@ -346,22 +241,16 @@ function ReportView({
   );
 }
 
-function RequestChip({ request }: { request: ReviewRequest }) {
-  const programLabel =
-    PROGRAM_OPTIONS.find((p) => p.id === request.programId)?.label ??
-    request.programId;
-  const wordCount = request.sopText.trim().split(/\s+/).length;
-
+function ProfileChip({ profile }: { profile: StudentProfile }) {
+  const who = profile.studentName || "Your brief";
   return (
     <div className="bg-white ring-1 ring-rule-soft rounded-xl px-4 py-2.5 flex items-center gap-3 text-caption shadow-card flex-1 min-w-0">
-      <div className="font-semibold text-navy whitespace-nowrap">
-        {request.studentName || "SOP review"}
-      </div>
+      <div className="font-semibold text-navy whitespace-nowrap">{who}</div>
       <span className="w-1 h-1 rounded-full bg-rule-strong" aria-hidden />
       <div className="text-ink-muted truncate">
-        {programLabel}
+        <span className="num">{profile.cgpa.toFixed(1)}</span> CGPA
         <span className="text-ink-faint mx-1.5">·</span>
-        <span className="num">{wordCount}</span> words
+        {profile.preferredCountries.join(" / ")}
       </div>
     </div>
   );
@@ -371,22 +260,16 @@ function ChromeButton({
   onClick,
   disabled,
   children,
-  variant = "default",
 }: {
   onClick: () => void;
   disabled?: boolean;
   children: React.ReactNode;
-  variant?: "default" | "primary";
 }) {
-  const cls =
-    variant === "primary"
-      ? "bg-purple text-white ring-purple hover:bg-navy hover:ring-navy"
-      : "bg-white text-ink-muted ring-rule hover:text-purple hover:ring-purple-pale";
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`text-caption font-semibold rounded-lg px-3.5 py-2 ring-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${cls}`}
+      className="text-caption font-semibold rounded-lg px-3.5 py-2 ring-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white text-ink-muted ring-rule hover:text-purple hover:ring-purple-pale"
     >
       {children}
     </button>

@@ -1,44 +1,45 @@
-// Tiny in-memory review cache. Process-local, fine for a prototype.
+// Tiny in-memory brief cache. Process-local, fine for a prototype.
 // Resets on cold start; that's intentional.
 
-import type { ProgramId, ReviewReport } from "./review-types";
+import type { OutcomeBrief } from "./brief-types";
+import type { StudentProfile } from "./profile";
 
-interface ReviewEntry {
-  report: ReviewReport;
+interface BriefEntry {
+  brief: OutcomeBrief;
   storedAt: number;
 }
 
 const TTL_MS = 1000 * 60 * 60; // 1 hour
-const reviewStore = new Map<string, ReviewEntry>();
+const briefStore = new Map<string, BriefEntry>();
 
-function reviewKey(sopText: string, programId: ProgramId): string {
-  // Hash-ish: program + length + first/last 64 chars. Cheap and good enough
-  // to avoid collisions in a prototype while keeping keys small.
-  const trimmed = sopText.trim();
-  const head = trimmed.slice(0, 64);
-  const tail = trimmed.slice(-64);
-  return `${programId}::${trimmed.length}::${head}::${tail}`;
+export function profileKey(p: StudentProfile): string {
+  return [
+    p.cgpa,
+    p.collegeTier,
+    p.gre ?? "-",
+    p.toefl ?? "-",
+    p.workExperienceYears,
+    p.workExperienceBucket,
+    p.targetField,
+    p.intent,
+    p.budgetUSDCap,
+    p.loanFunded ? 1 : 0,
+    [...p.preferredCountries].sort().join(","),
+  ].join("::");
 }
 
-export function getCachedReview(
-  sopText: string,
-  programId: ProgramId,
-): ReviewReport | null {
-  const key = reviewKey(sopText, programId);
-  const entry = reviewStore.get(key);
+export function getCachedBrief(p: StudentProfile): OutcomeBrief | null {
+  const key = profileKey(p);
+  const entry = briefStore.get(key);
   if (!entry) return null;
   if (Date.now() - entry.storedAt > TTL_MS) {
-    reviewStore.delete(key);
+    briefStore.delete(key);
     return null;
   }
-  return entry.report;
+  return entry.brief;
 }
 
-export function setCachedReview(
-  sopText: string,
-  programId: ProgramId,
-  report: ReviewReport,
-): void {
-  const key = reviewKey(sopText, programId);
-  reviewStore.set(key, { report, storedAt: Date.now() });
+export function setCachedBrief(p: StudentProfile, brief: OutcomeBrief): void {
+  const key = profileKey(p);
+  briefStore.set(key, { brief, storedAt: Date.now() });
 }

@@ -77,6 +77,14 @@ body {
 }
 
 /* Skeleton shimmer surface */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
 .shimmer {
   background: linear-gradient(
     90deg,
@@ -86,6 +94,20 @@ body {
   );
   background-size: 800px 100%;
   animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Drawer scrim */
