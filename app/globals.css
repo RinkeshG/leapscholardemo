@@ -4,12 +4,69 @@
 
 html,
 body {
-  background: #ffffff;
-  color: #0F1419;
+  background: #f8f8f8;
+  color: #0f1419;
   font-feature-settings: "ss01", "cv11", "tnum";
 }
 
 /* Tabular numerics for any cell that uses .num */
 .num {
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: -0.01em;
+}
+
+/* Skeleton shimmer surface */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(231, 231, 245, 0.4) 0%,
+    rgba(231, 231, 245, 0.9) 50%,
+    rgba(231, 231, 245, 0.4) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Drawer scrim */
+.scrim {
+  background: rgba(15, 20, 25, 0.32);
+  backdrop-filter: blur(2px);
+}
+
+/* Print stylesheet — the brief is designed to fit on one page. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+
+  /* Hide chrome */
+  .no-print,
+  aside,
+  header.app-header {
+    display: none !important;
+  }
+
+  /* Expand the brief to full width */
+  main {
+    display: block !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  article {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Avoid awkward page breaks inside rows */
+  tr,
+  .risk-item {
+    page-break-inside: avoid;
+  }
 }
