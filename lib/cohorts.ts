@@ -17,7 +17,7 @@ export function generateComparableCohort(
   profile: StudentProfile,
   u: University,
   admitProb: number,
-  sizeApprox: number,
+  _sizeApprox: number,
 ): ComparableStudent[] {
   const rng = makeRng(`${profile.cgpa}-${profile.collegeTier}-${u.id}`);
   const showN = 3;

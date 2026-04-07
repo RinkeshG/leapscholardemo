@@ -46,7 +46,7 @@ export function MethodologyDrawer({
               {title}
             </h2>
             <div className="text-caption text-ink-muted mt-1">
-              The math, the data, and what we're choosing not to do.
+              The math, the data, and what we&apos;re choosing not to do.
             </div>
           </div>
           <button
@@ -87,7 +87,7 @@ export function MethodologyDrawer({
         <div className="px-7 py-6 border-t border-rule-soft text-caption text-ink-subtle leading-relaxed">
           Built by an applicant for the Leap Scholar PM team. The dataset and
           scoring code is hand-curated for this prototype; in production, both
-          would query Leap's outcome warehouse directly.
+          would query Leap&apos;s outcome warehouse directly.
         </div>
       </aside>
     </div>

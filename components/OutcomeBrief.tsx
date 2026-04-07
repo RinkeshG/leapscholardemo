@@ -526,13 +526,13 @@ function CounselorCTA() {
       <div className="relative flex items-center justify-between gap-6 flex-wrap">
         <div className="flex-1 min-w-0 max-w-[560px]">
           <div className="eyebrow !text-purple-pale mb-2">
-            Once you've picked your bets
+            Once you&apos;ve picked your bets
           </div>
           <h2 className="font-display text-h3 font-bold tracking-tightish">
             Take this brief to a Leap counselor
           </h2>
           <p className="text-body text-white/70 mt-2">
-            A human who's walked hundreds of Indian students through this
+            A human who&apos;s walked hundreds of Indian students through this
             exact decision. Show them this page and ask them to argue with
             it. Free 30-minute call. No pitch.
           </p>
@@ -557,7 +557,7 @@ function Footer({ onOpenMethodology }: { onOpenMethodology: () => void }) {
   return (
     <footer className="px-7 sm:px-9 py-5 text-micro text-ink-subtle flex items-center justify-between gap-4 flex-wrap border-t border-rule-soft">
       <div className="max-w-[600px] leading-relaxed">
-        Admit and visa probabilities are calibrated against Leap's baseline of
+        Admit and visa probabilities are calibrated against Leap&apos;s baseline of
         Indian applicant outcomes over the last three admission cycles. No
         draft data is stored.
       </div>
