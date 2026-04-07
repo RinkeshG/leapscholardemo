@@ -314,8 +314,9 @@ function BetRow({
                   : "text-danger"
             }`}
           >
-            {score.netROI >= 0 ? "+" : ""}
-            {Math.round(score.netROI * 100)}% ROI
+            {score.netROI >= 4
+              ? `${(score.netROI + 1).toFixed(1)}x payback`
+              : `${score.netROI >= 0 ? "+" : ""}${Math.round(score.netROI * 100)}% ROI`}
           </div>
         </div>
         <div className="hidden lg:flex justify-end">

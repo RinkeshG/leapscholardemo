@@ -300,38 +300,71 @@ export function buildPortfolio(profile: StudentProfile): ProgramScore[] {
       (s.university.field === "ai-ml" ||
         s.university.field === "data-science")) ||
     (profile.targetField === "ai-ml" && s.university.field === "cs") ||
-    (profile.targetField === "data-science" && s.university.field === "cs");
+    (profile.targetField === "data-science" && s.university.field === "cs") ||
+    // BA students get to see CS/DS/management as adjacents (the dataset is
+    // light on BA programs and a 1-row portfolio looks broken)
+    (profile.targetField === "business-analytics" &&
+      (s.university.field === "data-science" ||
+        s.university.field === "management")) ||
+    // Management students get business-analytics as the closest neighbor
+    (profile.targetField === "management" &&
+      s.university.field === "business-analytics");
 
   const preferredMatched = preferred.filter(fieldMatch);
   const restMatched = rest.filter(fieldMatch);
 
-  // Rank preferred picks by "honesty-weighted" score:
-  //   0.5 × landed + 0.25 × roiNorm + 0.15 × withinBudget + 0.1 × tier
+  // Candidate strength is used to bias the composite: stronger candidates
+  // get tier-match weighted up so elite programs land at the top of their
+  // portfolio. Weaker candidates get landed-probability weighted up so
+  // they don't see a portfolio of unrealistic reaches.
+  const strength = candidateStrength(profile);
+
+  // Rank preferred picks by ambition-aware composite
   const ranked = preferredMatched
-    .map((s) => ({ s, score: compositeScore(s) }))
+    .map((s) => ({ s, score: compositeScore(s, strength) }))
     .sort((a, b) => b.score - a.score);
 
-  // Take the top 6 from preferred
-  const top = ranked.slice(0, 6).map((r) => r.s);
+  // Hard rule: at most 1 "accessible"-tier program in the main portfolio.
+  // OMSCS would otherwise win the composite for almost every profile, which
+  // is correct math but wrong product behavior — a strong candidate should
+  // see CMU/MIT at the top of the bet sheet, not the cheapest online MS.
+  const main: ProgramScore[] = [];
+  let accessibleSlots = 1;
+  for (const r of ranked) {
+    if (r.s.university.tierTag === "accessible") {
+      if (accessibleSlots <= 0) continue;
+      accessibleSlots -= 1;
+    }
+    main.push(r.s);
+    if (main.length >= 6) break;
+  }
 
-  // Leak 1 strong alternate from outside preferred countries IF it beats
-  // the weakest preferred pick on landed probability (this is the "TU Munich
-  // pops up even though you said US only" moment)
+  // Leak 1 strong alternate from outside preferred countries IF it
+  // meaningfully outscores the weakest preferred pick AND it's not an
+  // accessible-tier program (we never let OMSCS leak across borders —
+  // we use it as an explicit cost-hack edge move instead).
   const bestOutside = restMatched
-    .map((s) => ({ s, score: compositeScore(s) }))
+    .filter((s) => s.university.tierTag !== "accessible")
+    .map((s) => ({ s, score: compositeScore(s, strength) }))
     .sort((a, b) => b.score - a.score)
     .find((r) => {
-      const weakest = top[top.length - 1];
+      const weakest = main[main.length - 1];
       if (!weakest) return true;
-      return r.score > compositeScore(weakest) * 0.9; // meaningfully close
+      return r.score > compositeScore(weakest, strength) * 1.05; // meaningfully better
     });
 
-  const portfolio = [...top];
+  const portfolio = [...main];
   if (bestOutside && portfolio.length < 8) {
     portfolio.push(bestOutside.s);
   }
 
-  // Sort the final portfolio: safety → target → reach, then by landed prob
+  // Sort the final portfolio:
+  //   1. Skip rows always go last
+  //   2. Accessible-tier programs sort after all non-accessible non-skip rows
+  //      (this is what guarantees OMSCS never headlines a portfolio — it
+  //      sits at the bottom as a cost-hack reference, not the top pick)
+  //   3. Then by fit band: safety → target → reach
+  //   4. Then by landed probability descending
   const bandOrder: Record<FitBand, number> = {
     safety: 0,
     target: 1,
@@ -339,6 +372,14 @@ export function buildPortfolio(profile: StudentProfile): ProgramScore[] {
     skip: 3,
   };
   portfolio.sort((a, b) => {
+    const aSkip = a.fitBand === "skip" ? 1 : 0;
+    const bSkip = b.fitBand === "skip" ? 1 : 0;
+    if (aSkip !== bSkip) return aSkip - bSkip;
+
+    const aAcc = a.university.tierTag === "accessible" ? 1 : 0;
+    const bAcc = b.university.tierTag === "accessible" ? 1 : 0;
+    if (aAcc !== bAcc) return aAcc - bAcc;
+
     const bandDiff = bandOrder[a.fitBand] - bandOrder[b.fitBand];
     if (bandDiff !== 0) return bandDiff;
     return b.landedProbability - a.landedProbability;
@@ -347,17 +388,68 @@ export function buildPortfolio(profile: StudentProfile): ProgramScore[] {
   return portfolio;
 }
 
-function compositeScore(s: ProgramScore): number {
-  // Honest composite. Prizes probability-of-landing and ROI, penalizes blown budgets.
-  const landedWeight = s.landedProbability * 0.5;
-  const roiNorm = clamp(s.netROI, -2, 6) / 6;
-  const roiWeight = roiNorm * 0.25;
-  const budgetWeight = (s.withinBudget ? 1 : 0.3) * 0.15;
-  const tierWeight =
-    { "ultra-elite": 1, elite: 0.85, strong: 0.7, solid: 0.55, accessible: 0.4 }[
-      s.university.tierTag
-    ] * 0.1;
-  return landedWeight + roiWeight + budgetWeight + tierWeight;
+// Derives a 0–1 measure of how strong the candidate's profile is. This is
+// used by compositeScore to weight elite-tier programs higher for strong
+// candidates and weight landed-probability higher for weaker candidates.
+function candidateStrength(p: StudentProfile): number {
+  let s = 0.2;
+  // College tier signal
+  if (p.collegeTier === "iit") s += 0.3;
+  else if (p.collegeTier === "nit-tier1") s += 0.2;
+  else if (p.collegeTier === "tier1-private") s += 0.15;
+  else if (p.collegeTier === "tier2") s += 0.05;
+  // CGPA signal
+  if (p.cgpa >= 9.0) s += 0.18;
+  else if (p.cgpa >= 8.5) s += 0.13;
+  else if (p.cgpa >= 8.0) s += 0.08;
+  else if (p.cgpa >= 7.5) s += 0.04;
+  // GRE signal
+  if (p.gre != null) {
+    if (p.gre >= 328) s += 0.1;
+    else if (p.gre >= 320) s += 0.06;
+    else if (p.gre >= 315) s += 0.03;
+  }
+  // Work signal
+  if (p.workExperienceBucket === "faang-or-similar") s += 0.15;
+  else if (p.workExperienceBucket === "research-or-phd") s += 0.12;
+  else if (p.workExperienceBucket === "indian-startup" && p.workExperienceYears >= 1.5) s += 0.05;
+  return clamp(s, 0, 1);
+}
+
+function compositeScore(s: ProgramScore, strength: number): number {
+  // Ambition-aware composite. Strong candidates value tier match more;
+  // weak candidates value landed probability more.
+  //
+  // Total weight before tier scaling = 0.65; tier adds another 0.10–0.35
+  // depending on candidate strength.
+
+  // Landed weight is HIGHER for weak candidates (they need realistic bets)
+  // and LOWER for strong candidates (they can afford to take a few reaches).
+  const landedW = 0.30 + (1 - strength) * 0.20; // 0.30..0.50
+  const landedTerm = s.landedProbability * landedW;
+
+  // ROI is capped tighter than before so OMSCS's 68× ROI doesn't max out
+  // the composite for everyone. Anything above 3× cost recouped saturates.
+  const roiNorm = clamp(s.netROI, -1, 3) / 3;
+  const roiTerm = roiNorm * 0.15;
+
+  // Within-budget is mandatory-ish; over-budget gets a sharp penalty
+  const budgetTerm = (s.withinBudget ? 1 : 0.25) * 0.10;
+
+  // Tier weight scales with candidate strength. A 9.0 IIT FAANG student
+  // values a CMU seat far more than a tier3 student does, so the model
+  // should reflect that.
+  const tierMap: Record<University["tierTag"], number> = {
+    "ultra-elite": 1.0,
+    elite: 0.85,
+    strong: 0.65,
+    solid: 0.45,
+    accessible: 0.15,
+  };
+  const tierW = 0.10 + strength * 0.25; // 0.10..0.35
+  const tierTerm = tierMap[s.university.tierTag] * tierW;
+
+  return landedTerm + roiTerm + budgetTerm + tierTerm;
 }
 
 // ────────────────────────────────────────────────────────────────────────

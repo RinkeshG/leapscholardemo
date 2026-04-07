@@ -65,6 +65,21 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  // Credibility floor: if every program in the portfolio is below the noise
+  // floor (admit < 8%), the honest answer is "your profile isn't a credible
+  // bet anywhere on this list yet" — not a misleading brief showing 5%
+  // probabilities as if they were real shots.
+  const credibleBets = portfolio.filter((s) => s.admitProbability >= 0.08);
+  if (credibleBets.length === 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Your profile is below the credibility floor for every program on this list. The honest move is to strengthen the profile first — raise CGPA if you're still in undergrad, take the GRE targeting 320+, or get 12–18 months of work experience at a recognizable company. Come back when one of those numbers has changed.",
+      },
+      { status: 400 },
+    );
+  }
   const riskFlags = computeRiskFlags(profile, portfolio);
 
   // 2. LLM narrative pass

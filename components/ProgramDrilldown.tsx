@@ -157,8 +157,9 @@ export function ProgramDrilldown({ score, drilldown, onClose }: Props) {
                 score.netROI >= 0 ? "text-success" : "text-danger"
               }`}
             >
-              {score.netROI >= 0 ? "+" : ""}
-              {Math.round(score.netROI * 100)}%
+              {score.netROI >= 4
+                ? `${(score.netROI + 1).toFixed(1)}x payback`
+                : `${score.netROI >= 0 ? "+" : ""}${Math.round(score.netROI * 100)}%`}
             </span>
             .
           </div>
