@@ -17,6 +17,7 @@ const config: Config = {
           light: "#807EFC",
           pale: "#C2C1FF",
           tint: "#EFEEFF",
+          wash: "#F5F5FF", // softer than tint, for section backgrounds
         },
         // Deep navy used by Leap for headings and dark text
         navy: {
@@ -29,15 +30,35 @@ const config: Config = {
         // Body text scale
         ink: {
           DEFAULT: "#0F1419",
+          strong: "#0B1220", // display body
           muted: "#5A6473",
+          subtle: "#737E8D", // between muted and faint; easier read than faint
           faint: "#8A93A3",
         },
-        rule: "#E6E6E6",
-        surface: "#F8F8F8",
-        // Semantic (Leap palette)
-        success: "#007A4D",
-        danger: "#D31510",
-        warn: "#E8C600",
+        rule: {
+          DEFAULT: "#EAEAEF",
+          strong: "#D8D8E0",
+          soft: "#F1F1F5",
+        },
+        surface: {
+          DEFAULT: "#F8F8FA",
+          raised: "#FFFFFF",
+          sunken: "#F3F3F7",
+        },
+        // Semantic (Leap palette). warn replaced with a deeper gold that
+        // actually clears 4.5:1 on white; warn-pale still used for fills.
+        success: {
+          DEFAULT: "#007A4D",
+          tint: "#E6F2ED",
+        },
+        danger: {
+          DEFAULT: "#D31510",
+          tint: "#FDECEB",
+        },
+        warn: {
+          DEFAULT: "#A5740A", // WCAG AA on white
+          tint: "#FBF1D8",
+        },
         // Fit-band colors map onto semantics
         reach: "#D31510",
         target: "#5452E4",
@@ -54,10 +75,27 @@ const config: Config = {
       },
       borderRadius: {
         xl: "12px",
+        "2xl": "16px",
       },
       boxShadow: {
         leap: "0 4px 20px -4px rgba(84, 82, 228, 0.20)",
         card: "0 1px 2px rgba(15, 20, 25, 0.04), 0 1px 1px rgba(15, 20, 25, 0.03)",
+        cardRaised:
+          "0 1px 2px rgba(15, 20, 25, 0.05), 0 10px 40px -18px rgba(28, 27, 100, 0.18)",
+        ring: "0 0 0 3px rgba(84, 82, 228, 0.12)",
+      },
+      fontSize: {
+        // Explicit type scale. First value = size, second = line-height.
+        eyebrow: ["10px", { lineHeight: "14px", letterSpacing: "0.10em" }],
+        micro: ["11px", { lineHeight: "16px" }],
+        caption: ["12px", { lineHeight: "18px" }],
+        body: ["13.5px", { lineHeight: "22px" }],
+        lede: ["15px", { lineHeight: "24px" }],
+        h4: ["16px", { lineHeight: "22px", letterSpacing: "-0.005em" }],
+        h3: ["19px", { lineHeight: "26px", letterSpacing: "-0.01em" }],
+        h2: ["24px", { lineHeight: "30px", letterSpacing: "-0.018em" }],
+        h1: ["32px", { lineHeight: "36px", letterSpacing: "-0.022em" }],
+        display: ["44px", { lineHeight: "46px", letterSpacing: "-0.028em" }],
       },
       keyframes: {
         shimmer: {

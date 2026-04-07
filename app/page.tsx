@@ -162,31 +162,31 @@ function TopBar({
   onHome: (() => void) | null;
 }) {
   return (
-    <header className="app-header bg-white border-b border-rule no-print sticky top-0 z-30">
-      <div className="max-w-[1200px] mx-auto px-6 py-3.5 flex items-center justify-between">
+    <header className="app-header bg-white/85 backdrop-blur-md border-b border-rule-soft no-print sticky top-0 z-30">
+      <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
         <button
           onClick={onHome ?? undefined}
           disabled={!onHome}
-          className="flex items-center gap-2.5 group disabled:cursor-default"
+          className="flex items-center gap-3 group disabled:cursor-default"
         >
-          <div className="w-8 h-8 bg-purple rounded-lg flex items-center justify-center shadow-leap">
-            <span className="font-display text-white font-bold text-[15px] leading-none">
+          <div className="w-9 h-9 bg-purple rounded-xl flex items-center justify-center shadow-leap">
+            <span className="font-display text-white font-bold text-[16px] leading-none">
               L
             </span>
           </div>
-          <div className="flex items-baseline gap-2.5">
-            <div className="font-display text-navy font-bold text-[17px] tracking-tighter2 group-hover:text-purple transition-colors">
+          <div className="flex items-baseline gap-3">
+            <div className="font-display text-navy font-bold text-[18px] tracking-tighter2 group-hover:text-purple transition-colors">
               Leap Review
             </div>
-            <div className="hidden sm:block text-ink-faint text-[10px] uppercase tracking-[0.12em] font-semibold border-l border-rule pl-2.5">
-              Free SOP feedback · By Leap Scholar
+            <div className="hidden sm:block eyebrow border-l border-rule pl-3">
+              Free SOP feedback by Leap Scholar
             </div>
           </div>
         </button>
         <nav className="flex items-center gap-1">
           <button
             onClick={onOpenMethodology}
-            className="text-[12px] font-semibold text-ink-muted hover:text-purple px-3 py-1.5 transition-colors"
+            className="text-caption font-semibold text-ink-muted hover:text-purple hover:bg-purple-wash px-3 py-2 rounded-lg transition-colors"
           >
             How it works
           </button>
@@ -210,45 +210,46 @@ function Landing({
   error: string | null;
 }) {
   return (
-    <main className="max-w-[820px] mx-auto px-6 py-10 sm:py-12">
-      <div className="text-center mb-9">
-        <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-purple font-semibold mb-4 bg-purple-tint border border-purple-pale rounded-full px-3 py-1">
+    <main className="max-w-[820px] mx-auto px-6 py-12 sm:py-16">
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 eyebrow !text-purple mb-5 bg-purple-wash ring-1 ring-purple-pale rounded-full px-3 py-1.5">
           <span className="w-1.5 h-1.5 bg-purple rounded-full" />
-          Free SOP feedback for Indian students applying abroad
+          For Indian students applying abroad
         </div>
-        <h1 className="font-display text-[34px] sm:text-[40px] font-bold text-navy tracking-tighter2 leading-[1.05]">
-          Honest feedback on your SOP,<br />before you hit submit.
+        <h1 className="font-display text-[36px] sm:text-display font-bold text-navy tracking-tighter2 leading-[1.05]">
+          Honest feedback on your SOP,
+          <br />
+          <span className="text-purple">before you hit submit.</span>
         </h1>
-        <p className="text-[15px] sm:text-[16px] text-ink-muted mt-4 leading-relaxed max-w-[620px] mx-auto">
-          Paste your Statement of Purpose. Leap Review scores it against the
-          rubric for your target program, flags the clichés and weak claims
-          Indian applicants tend to fall into, and tells you the three things
-          to fix tonight. The kind of feedback a strong older sibling who&apos;s
-          been through this would give you — direct, specific, no fluff.
+        <p className="text-lede text-ink-muted mt-5 max-w-[600px] mx-auto">
+          Paste your draft. We score it against admitted Indian applicants to
+          your target program, flag the clichés and weak claims, and tell you
+          the three things to fix next — like a strong older sibling who&apos;s
+          been through this would.
         </p>
-        <div className="flex items-center justify-center gap-4 mt-5 text-[10px] text-ink-faint uppercase tracking-[0.1em] font-semibold">
-          <Stat label="programs" value={String(PROGRAM_OPTIONS.length)} />
+        <div className="flex items-center justify-center gap-5 mt-6">
+          <Stat label="Programs" value={String(PROGRAM_OPTIONS.length)} />
           <Dot />
-          <Stat label="dimensions scored" value="6" />
+          <Stat label="Dimensions scored" value="6" />
           <Dot />
-          <Stat label="cost" value="free" />
+          <Stat label="Cost" value="Free" />
         </div>
       </div>
 
-      <div className="bg-white border border-rule rounded-xl shadow-card p-6 sm:p-8">
+      <div className="bg-white ring-1 ring-rule-soft rounded-2xl shadow-cardRaised p-7 sm:p-9">
         <ReviewForm
           initial={initial}
           onSubmit={onSubmit}
           loading={loading}
         />
         {error && (
-          <div className="mt-4 text-[12px] text-danger border border-danger/30 bg-danger/5 rounded-md px-3 py-2">
+          <div className="mt-4 text-caption text-danger border border-danger/30 bg-danger-tint/60 rounded-lg px-3 py-2.5">
             {error}
           </div>
         )}
       </div>
 
-      <p className="text-center text-[11px] text-ink-faint mt-5 leading-relaxed">
+      <p className="text-center text-caption text-ink-subtle mt-6 leading-relaxed">
         Your draft stays in your browser. Nothing is saved or shared.
       </p>
     </main>
@@ -257,17 +258,17 @@ function Landing({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="font-display text-navy text-[14px] font-bold normal-case tracking-normal num">
+    <div className="flex items-baseline gap-2">
+      <span className="font-display text-navy text-h4 font-bold num">
         {value}
       </span>
-      <span>{label}</span>
+      <span className="text-caption text-ink-subtle">{label}</span>
     </div>
   );
 }
 
 function Dot() {
-  return <span className="w-1 h-1 bg-rule rounded-full" />;
+  return <span className="w-1 h-1 bg-rule-strong rounded-full" />;
 }
 
 // ── Report view ────────────────────────────────────────────
@@ -310,32 +311,24 @@ function ReportView({
   onOpenMethodology: () => void;
 }) {
   return (
-    <main className="max-w-[1200px] mx-auto px-6 py-6">
+    <main className="max-w-[1200px] mx-auto px-6 py-8">
       {request && (
-        <div className="mb-4 flex items-center justify-between gap-4 flex-wrap no-print">
+        <div className="mb-5 flex items-center justify-between gap-4 flex-wrap no-print">
           <RequestChip request={request} />
-          <div className="flex gap-2">
-            <button
-              onClick={onEdit}
-              disabled={loading}
-              className="text-[11px] uppercase tracking-[0.06em] font-semibold border border-rule rounded-md px-3 py-1.5 text-ink-muted hover:border-purple hover:text-purple disabled:opacity-50 transition-colors bg-white"
-            >
+          <div className="flex items-center gap-2">
+            <ChromeButton onClick={onEdit} disabled={loading}>
               Edit draft
-            </button>
-            <button
+            </ChromeButton>
+            <ChromeButton
               onClick={onRevise}
               disabled={loading}
-              className="text-[11px] uppercase tracking-[0.06em] font-semibold border border-purple rounded-md px-3 py-1.5 text-purple hover:bg-purple hover:text-white disabled:opacity-50 transition-colors bg-white"
+              variant="primary"
             >
               Submit revised draft
-            </button>
-            <button
-              onClick={onNew}
-              disabled={loading}
-              className="text-[11px] uppercase tracking-[0.06em] font-semibold border border-rule rounded-md px-3 py-1.5 text-ink-muted hover:border-purple hover:text-purple disabled:opacity-50 transition-colors bg-white"
-            >
+            </ChromeButton>
+            <ChromeButton onClick={onNew} disabled={loading}>
               New review
-            </button>
+            </ChromeButton>
           </div>
         </div>
       )}
@@ -358,15 +351,44 @@ function RequestChip({ request }: { request: ReviewRequest }) {
     PROGRAM_OPTIONS.find((p) => p.id === request.programId)?.label ??
     request.programId;
   const wordCount = request.sopText.trim().split(/\s+/).length;
-  const summary = [programLabel, `${wordCount} words`].join("  ·  ");
 
   return (
-    <div className="bg-white border border-rule rounded-xl px-4 py-2.5 flex items-center gap-3 text-[12px] shadow-card flex-1 min-w-0">
+    <div className="bg-white ring-1 ring-rule-soft rounded-xl px-4 py-2.5 flex items-center gap-3 text-caption shadow-card flex-1 min-w-0">
       <div className="font-semibold text-navy whitespace-nowrap">
         {request.studentName || "SOP review"}
       </div>
-      <div className="text-ink-faint">·</div>
-      <div className="text-ink-muted truncate">{summary}</div>
+      <span className="w-1 h-1 rounded-full bg-rule-strong" aria-hidden />
+      <div className="text-ink-muted truncate">
+        {programLabel}
+        <span className="text-ink-faint mx-1.5">·</span>
+        <span className="num">{wordCount}</span> words
+      </div>
     </div>
+  );
+}
+
+function ChromeButton({
+  onClick,
+  disabled,
+  children,
+  variant = "default",
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+  variant?: "default" | "primary";
+}) {
+  const cls =
+    variant === "primary"
+      ? "bg-purple text-white ring-purple hover:bg-navy hover:ring-navy"
+      : "bg-white text-ink-muted ring-rule hover:text-purple hover:ring-purple-pale";
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`text-caption font-semibold rounded-lg px-3.5 py-2 ring-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${cls}`}
+    >
+      {children}
+    </button>
   );
 }

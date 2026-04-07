@@ -21,7 +21,7 @@ export function ReviewReport({ data, previousReport, onOpenMethodology }: Props)
   const prev = isRevision ? previousReport : null;
 
   return (
-    <article className="bg-white border border-rule rounded-xl shadow-card overflow-hidden animate-fadeIn">
+    <article className="bg-white rounded-2xl shadow-cardRaised overflow-hidden animate-fadeIn ring-1 ring-rule-soft">
       <Header
         report={report}
         previousReport={prev}
@@ -38,7 +38,7 @@ export function ReviewReport({ data, previousReport, onOpenMethodology }: Props)
       <MissingPanel report={report} />
       <ActionPlan report={report} />
       <CounselorCTA />
-      <Footer report={report} onOpenMethodology={onOpenMethodology} />
+      <Footer onOpenMethodology={onOpenMethodology} />
     </article>
   );
 }
@@ -62,49 +62,55 @@ function Header({
     month: "short",
     day: "numeric",
   });
+  const who = report.studentName ? report.studentName : "Your draft";
   return (
-    <header className="border-b border-rule px-6 py-5 flex items-start justify-between gap-6">
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] uppercase tracking-[0.12em] text-purple font-semibold mb-1.5 flex items-center gap-2">
-          <span>Leap Review</span>
-          {previousReport && (
-            <span className="inline-flex items-center gap-1 px-2 py-[1px] rounded-full bg-purple text-white text-[9px] tracking-[0.06em]">
-              Revised draft · v2
-            </span>
-          )}
+    <header className="px-7 pt-7 pb-6 sm:px-9 sm:pt-9 sm:pb-7">
+      <div className="flex items-start justify-between gap-6 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 text-micro text-ink-subtle mb-2">
+            <span className="font-medium">{who}</span>
+            <span className="text-ink-faint">·</span>
+            <time className="num" dateTime={report.generatedAt}>
+              {dateStr}
+            </time>
+            {previousReport && (
+              <span className="inline-flex items-center gap-1 ml-1 px-2 py-[2px] rounded-full bg-purple text-white text-[9px] font-semibold tracking-[0.04em] uppercase">
+                Revision · v2
+              </span>
+            )}
+          </div>
+          <h1 className="font-display text-h1 text-navy font-bold">
+            SOP for {report.programName}
+          </h1>
+          <div className="text-caption text-ink-muted mt-1.5">
+            {report.university} ·{" "}
+            <span className="num text-ink">{report.wordCount}</span> words
+            reviewed
+          </div>
         </div>
-        <h1 className="font-display text-[26px] font-bold tracking-tighter2 text-navy leading-tight">
-          {report.studentName ? `${report.studentName}'s SOP` : "Your SOP"}
-          <span className="text-ink-faint font-normal text-[16px] ml-2">
-            for {report.programName}
-          </span>
-        </h1>
-        <div className="text-[13px] text-ink-muted mt-1 leading-snug">
-          {report.university} ·{" "}
-          <span className="num">{report.wordCount}</span> words
-        </div>
-      </div>
-      <div className="text-right shrink-0 no-print">
-        <div className="text-[10px] uppercase tracking-[0.12em] text-ink-faint">
-          Reviewed
-        </div>
-        <div className="text-[12px] text-ink num">{dateStr}</div>
-        <div className="flex gap-1.5 mt-2 justify-end">
-          <button
-            onClick={onOpenMethodology}
-            className="text-[10px] uppercase tracking-[0.06em] font-semibold border border-rule rounded-md px-2.5 py-1 text-ink-muted hover:border-purple hover:text-purple transition-colors"
-          >
-            How this works
-          </button>
-          <button
-            onClick={onPrint}
-            className="text-[10px] uppercase tracking-[0.06em] font-semibold border border-rule rounded-md px-2.5 py-1 text-ink-muted hover:border-purple hover:text-purple transition-colors"
-          >
-            Save as PDF
-          </button>
+        <div className="flex items-center gap-1.5 shrink-0 no-print">
+          <HeaderAction onClick={onOpenMethodology} label="How this works" />
+          <HeaderAction onClick={onPrint} label="Save as PDF" />
         </div>
       </div>
     </header>
+  );
+}
+
+function HeaderAction({
+  onClick,
+  label,
+}: {
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="text-caption font-semibold text-ink-muted hover:text-purple hover:bg-purple-wash px-3 py-2 rounded-lg transition-colors"
+    >
+      {label}
+    </button>
   );
 }
 
@@ -130,30 +136,33 @@ function Verdict({
         ? "Workable draft"
         : "Below baseline";
   return (
-    <section className="border-b border-rule px-6 py-5 bg-purple-tint/40">
-      <div className="flex gap-4">
-        <div className="w-1 bg-purple rounded-full shrink-0" />
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1.5">
-            <div className="text-[10px] uppercase tracking-[0.12em] text-purple font-semibold">
-              The honest take on your draft
-            </div>
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-ink-muted font-semibold border border-rule rounded-full px-2 py-[1px] bg-white">
+    <section className="px-7 pb-8 pt-2 sm:px-9">
+      <div className="relative bg-purple-wash rounded-2xl px-6 py-6 sm:px-8 sm:py-7">
+        <div className="absolute left-0 top-6 bottom-6 w-[3px] bg-purple rounded-r-full" />
+        <div className="pl-4 sm:pl-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 text-eyebrow text-ink font-semibold bg-white rounded-full px-2.5 py-[3px] ring-1 ring-rule">
               <span className={`w-1.5 h-1.5 rounded-full ${bandColor}`} />
               {bandLabel}
             </span>
+            <span className="text-eyebrow text-ink-faint">
+              The honest take
+            </span>
           </div>
-          <p className="font-display text-[19px] text-navy leading-snug font-semibold tracking-tightish">
+          <p className="font-display text-h2 text-navy font-semibold max-w-[640px]">
             {report.verdict}
           </p>
-          <PercentileBar report={report} previousReport={previousReport} />
+
+          <div className="dotted-rule h-[2px] my-6" />
+
+          <PercentileStat report={report} previousReport={previousReport} />
         </div>
       </div>
     </section>
   );
 }
 
-function PercentileBar({
+function PercentileStat({
   report,
   previousReport,
 }: {
@@ -166,60 +175,123 @@ function PercentileBar({
   const revisionDelta = previousReport
     ? asIs - previousReport.asIsPercentile
     : null;
+  const suffix = ordinalSuffix(asIs);
   return (
-    <div className="mt-4 bg-white border border-rule rounded-xl px-4 py-3">
-      <div className="flex items-baseline justify-between gap-3 mb-2">
-        <div className="text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-muted">
-          Where you sit vs. admitted Indian applicants at {report.university}
-        </div>
-        <div className="flex items-center gap-2">
+    <div>
+      <div className="flex items-end gap-6 flex-wrap">
+        <div>
+          <div className="text-eyebrow text-ink-subtle mb-1">
+            Your position vs. admitted Indian applicants
+          </div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-display font-bold text-navy text-display num leading-none">
+              {asIs}
+              <span className="text-h3 text-ink-subtle font-semibold">
+                {suffix}
+              </span>
+            </span>
+            <span className="text-body text-ink-muted">percentile as-is</span>
+          </div>
+          {delta > 0 && (
+            <div className="text-caption text-purple font-semibold mt-1">
+              +{delta} pts → {withFixes}
+              {ordinalSuffix(withFixes)} after the fixes below
+            </div>
+          )}
           {revisionDelta !== null && revisionDelta !== 0 && (
             <div
-              className={`text-[10px] uppercase tracking-[0.06em] font-semibold num inline-flex items-center gap-1 px-1.5 py-[1px] rounded-full ${
-                revisionDelta > 0
-                  ? "bg-success/10 text-success"
-                  : "bg-danger/10 text-danger"
+              className={`inline-flex items-center gap-1 mt-1.5 text-caption font-semibold num ${
+                revisionDelta > 0 ? "text-success" : "text-danger"
               }`}
             >
-              {revisionDelta > 0 ? "↑" : "↓"} {Math.abs(revisionDelta)} vs v1
-            </div>
-          )}
-          {delta > 0 && (
-            <div className="text-[10px] uppercase tracking-[0.06em] font-semibold text-purple num">
-              +{delta} pts after fixes
+              <span aria-hidden>{revisionDelta > 0 ? "▲" : "▼"}</span>
+              {Math.abs(revisionDelta)} pts vs. v1
             </div>
           )}
         </div>
       </div>
-      <div className="relative h-2.5 bg-surface rounded-full">
-        {/* with-fixes bar (lighter) */}
+
+      {/* bar */}
+      <div className="mt-5 max-w-[560px]">
         <div
-          className="absolute inset-y-0 left-0 bg-purple-pale rounded-full"
-          style={{ width: `${withFixes}%` }}
-        />
-        {/* as-is bar (solid) */}
-        <div
-          className="absolute inset-y-0 left-0 bg-purple rounded-full"
-          style={{ width: `${asIs}%` }}
-        />
-        {/* median tick */}
-        <div
-          className="absolute top-[-3px] bottom-[-3px] w-px bg-navy"
-          style={{ left: "50%" }}
-          aria-label="Median admit"
-        />
+          className="relative h-[8px] bg-white/70 rounded-full ring-1 ring-rule overflow-visible"
+          role="img"
+          aria-label={`${asIs}th percentile, projected ${withFixes}th after fixes`}
+        >
+          <div
+            className="absolute inset-y-0 left-0 bg-purple-pale rounded-full bar-grow"
+            style={{ width: `${withFixes}%` }}
+          />
+          <div
+            className="absolute inset-y-0 left-0 bg-purple rounded-full bar-grow"
+            style={{ width: `${asIs}%`, animationDelay: "80ms" }}
+          />
+          <div
+            className="absolute -top-1 -bottom-1 w-[2px] bg-navy/80"
+            style={{ left: "50%" }}
+            aria-hidden
+          />
+        </div>
+        <div className="flex items-center justify-between mt-1.5 text-[10px] text-ink-faint num">
+          <span>Bottom</span>
+          <span className="font-semibold text-navy normal-case tracking-normal">
+            Median admit
+          </span>
+          <span>Top</span>
+        </div>
       </div>
-      <div className="flex items-baseline justify-between mt-1.5 text-[10px] text-ink-faint num">
-        <span>Bottom</span>
-        <span className="font-semibold text-navy normal-case tracking-normal">
-          Median admit
-        </span>
-        <span>Top</span>
-      </div>
-      <div className="text-[12px] text-ink-muted leading-relaxed mt-2">
+
+      <p className="text-body text-ink-muted mt-4 max-w-[640px]">
         {report.percentileStatement}
-      </div>
+      </p>
     </div>
+  );
+}
+
+function ordinalSuffix(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return "th";
+  switch (n % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+}
+
+// ── Shared section shell ───────────────────────────────────
+
+function Section({
+  title,
+  meta,
+  children,
+  tone = "default",
+  className = "",
+}: {
+  title: string;
+  meta?: React.ReactNode;
+  children: React.ReactNode;
+  tone?: "default" | "hushed";
+  className?: string;
+}) {
+  return (
+    <section
+      className={`px-7 sm:px-9 py-7 sm:py-8 border-t border-rule-soft ${
+        tone === "hushed" ? "bg-surface" : ""
+      } ${className}`}
+    >
+      <div className="flex items-baseline justify-between gap-4 flex-wrap mb-5">
+        <h2 className="font-display text-h3 text-navy font-bold">{title}</h2>
+        {meta && (
+          <div className="text-caption text-ink-muted">{meta}</div>
+        )}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -236,23 +308,15 @@ function ScoresPanel({
     (previousReport?.scores ?? []).map((s) => [s.key, s.score]),
   );
   return (
-    <section className="border-b border-rule px-6 py-5">
-      <div className="flex items-baseline justify-between mb-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-faint font-semibold">
-            Score against admitted baseline
-          </div>
-          <div className="text-[11px] text-ink-muted mt-0.5">
-            How this draft compares to admitted students at{" "}
-            <span className="font-semibold text-navy">{report.university}</span>
-            . Click any row to ask &ldquo;how do I move this up?&rdquo;
-          </div>
-        </div>
-        <div className="text-[10px] text-ink-faint shrink-0">
-          0–10 scale
-        </div>
-      </div>
-      <div className="space-y-2">
+    <Section
+      title="Scores against the admitted baseline"
+      meta={
+        <>
+          6 dimensions · 0–10 scale · click any row to lift it
+        </>
+      }
+    >
+      <div className="divide-y divide-rule-soft">
         {report.scores.map((s) => (
           <ScoreRow
             key={s.key}
@@ -262,7 +326,7 @@ function ScoresPanel({
           />
         ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -281,10 +345,13 @@ function ScoreRow({
   const [error, setError] = useState<string | null>(null);
 
   const delta = score.score - score.admittedMedian;
+  // Semantic bar colors tuned for contrast on the white card and clear meaning.
   const barColor =
-    delta >= 0 ? "bg-success" : delta >= -2 ? "bg-warn" : "bg-danger";
+    delta >= 0 ? "bg-purple" : delta >= -1 ? "bg-warn" : "bg-danger";
   const pct = (score.score / 10) * 100;
   const medianPct = (score.admittedMedian / 10) * 100;
+  const status: "at" | "near" | "below" =
+    delta >= 0 ? "at" : delta >= -1 ? "near" : "below";
 
   async function fetchDrilldown() {
     if (answer || loading) return;
@@ -320,65 +387,109 @@ function ScoreRow({
   }
 
   return (
-    <div className="text-[12px]">
-      <div className="flex items-center gap-3">
-        <div className="w-36 text-ink font-semibold shrink-0">{score.label}</div>
-        <div className="flex-1 relative h-2 bg-surface rounded-full overflow-visible">
+    <div className="py-4 first:pt-0 last:pb-0">
+      {/* Row 1 — label + score chip */}
+      <div className="flex items-baseline justify-between gap-4">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <h3 className="text-[14px] font-semibold text-navy tracking-tightish">
+            {score.label}
+          </h3>
+          <StatusPill status={status} />
+        </div>
+        <div className="shrink-0 flex items-baseline gap-2">
+          <span className="num font-display font-bold text-h4 text-navy">
+            {score.score}
+          </span>
+          <span className="text-caption text-ink-faint num">
+            / {score.admittedMedian} median
+          </span>
+          {previousScore !== null && previousScore !== score.score && (
+            <span
+              className={`ml-1 inline-flex items-center gap-0.5 text-[10px] font-semibold num ${
+                score.score > previousScore ? "text-success" : "text-danger"
+              }`}
+            >
+              <span aria-hidden>{score.score > previousScore ? "▲" : "▼"}</span>
+              {Math.abs(score.score - previousScore)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Row 2 — bar */}
+      <div className="mt-2.5">
+        <div className="relative h-[6px] bg-surface-sunken rounded-full overflow-visible">
           <div
-            className={`absolute inset-y-0 left-0 ${barColor} rounded-full transition-all`}
+            className={`absolute inset-y-0 left-0 ${barColor} rounded-full bar-grow`}
             style={{ width: `${pct}%` }}
           />
           <div
-            className="absolute top-[-3px] bottom-[-3px] w-px bg-navy"
+            className="absolute -top-[3px] -bottom-[3px] w-[2px] bg-navy/60 rounded-full"
             style={{ left: `${medianPct}%` }}
             aria-label={`Admitted median ${score.admittedMedian}`}
           />
         </div>
-        <div className="w-20 text-right shrink-0 num">
-          <span
-            className={`font-bold ${
-              delta >= 0
-                ? "text-success"
-                : delta >= -2
-                  ? "text-ink"
-                  : "text-danger"
-            }`}
-          >
-            {score.score}
-          </span>
-          <span className="text-ink-faint">/{score.admittedMedian}</span>
-          {previousScore !== null && previousScore !== score.score && (
-            <div
-              className={`text-[9px] uppercase tracking-[0.06em] font-semibold mt-0.5 ${
-                score.score > previousScore ? "text-success" : "text-danger"
-              }`}
-            >
-              {score.score > previousScore ? "↑" : "↓"}{" "}
-              {Math.abs(score.score - previousScore)} vs v1
-            </div>
-          )}
-        </div>
       </div>
-      <div className="ml-[156px] text-[11px] text-ink-muted leading-snug mt-0.5 flex items-baseline justify-between gap-3">
-        <span className="flex-1">{score.rationale}</span>
+
+      {/* Row 3 — rationale + lift action */}
+      <div className="mt-3 flex items-start justify-between gap-4">
+        <p className="text-body text-ink-muted max-w-[680px]">
+          {score.rationale}
+        </p>
         <button
           type="button"
           onClick={handleToggle}
-          className="shrink-0 text-[10px] uppercase tracking-[0.06em] font-semibold text-purple hover:text-navy transition-colors no-print"
+          className="shrink-0 text-caption font-semibold text-purple hover:text-navy transition-colors no-print inline-flex items-center gap-1"
+          aria-expanded={open}
         >
-          {open ? "Hide" : "How do I move this up? →"}
+          {open ? "Hide" : "Lift this score"}
+          <span
+            aria-hidden
+            className={`transition-transform ${open ? "rotate-180" : ""}`}
+          >
+            ↓
+          </span>
         </button>
       </div>
+
+      {/* Row 4 — drilldown panel */}
       {open && (
-        <div className="ml-[156px] mt-2 border-l-2 border-purple bg-purple-tint/30 px-3 py-2.5 rounded-r-md text-[12px] text-navy leading-relaxed">
+        <div className="mt-3 rounded-xl bg-purple-wash ring-1 ring-purple-pale/60 px-4 py-3.5 text-body text-navy">
           {loading && (
-            <div className="text-ink-muted italic">Reading your draft…</div>
+            <div className="inline-flex items-center gap-2 text-ink-muted">
+              <span className="inline-block w-3 h-3 border-2 border-purple border-t-transparent rounded-full animate-spin" />
+              Reading your draft…
+            </div>
           )}
           {error && <div className="text-danger">{error}</div>}
           {answer && <div className="whitespace-pre-wrap">{answer}</div>}
         </div>
       )}
     </div>
+  );
+}
+
+function StatusPill({ status }: { status: "at" | "near" | "below" }) {
+  const cfg = {
+    at: {
+      label: "At baseline",
+      cls: "bg-purple-wash text-purple ring-purple-pale/70",
+    },
+    near: {
+      label: "1 below",
+      cls: "bg-warn-tint text-warn ring-warn/30",
+    },
+    below: {
+      label: "Below baseline",
+      cls: "bg-danger-tint text-danger ring-danger/25",
+    },
+  }[status];
+  return (
+    <span
+      className={`text-[10px] uppercase tracking-[0.06em] font-semibold px-1.5 py-[2px] rounded-md ring-1 ${cfg.cls}`}
+    >
+      {cfg.label}
+    </span>
   );
 }
 
@@ -398,80 +509,132 @@ function AnnotatedSop({
     activeFlagIdx !== null ? report.flags[activeFlagIdx] ?? null : null;
 
   const sevCount = countBySeverity(report.flags);
+  const totalFlags = report.flags.length;
 
   return (
-    <section className="border-b border-rule px-6 py-5">
-      <div className="flex items-baseline justify-between mb-3 gap-4 flex-wrap">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-faint font-semibold">
-            Inline issues
-          </div>
-          <div className="text-[11px] text-ink-muted mt-0.5">
-            {report.flags.length === 0
-              ? "No issues flagged in the draft."
-              : "Click any highlighted phrase to see why it was flagged."}
+    <Section
+      title="Your draft, annotated"
+      meta={
+        totalFlags === 0 ? (
+          "No issues flagged — tight draft."
+        ) : (
+          <span className="inline-flex items-center gap-2.5">
+            <span className="num font-semibold text-navy">{totalFlags}</span>{" "}
+            issues flagged
+            <span className="inline-flex items-center gap-2">
+              <SevPill count={sevCount.high} label="High" tone="danger" />
+              <SevPill count={sevCount.medium} label="Med" tone="warn" />
+              <SevPill count={sevCount.low} label="Low" tone="muted" />
+            </span>
+          </span>
+        )
+      }
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-6">
+        <div className="relative">
+          <div className="rounded-xl ring-1 ring-rule-soft bg-white px-6 py-5 sm:px-7 sm:py-6 text-[14.5px] leading-[1.8] text-ink-strong whitespace-pre-wrap font-sans">
+            {segments.map((seg, i) => {
+              if (seg.type === "text") return <span key={i}>{seg.text}</span>;
+              const isActive = activeFlagIdx === seg.flagIdx;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() =>
+                    onSelect(isActive ? null : seg.flagIdx)
+                  }
+                  className={`cursor-pointer transition-colors rounded-[3px] -mx-[1px] px-[1px] ${flagClasses(seg.severity, isActive)}`}
+                >
+                  {seg.text}
+                </button>
+              );
+            })}
           </div>
         </div>
-        {report.flags.length > 0 && (
-          <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.06em] text-ink-faint font-semibold">
-            <SevPill count={sevCount.high} label="High" color="bg-danger" />
-            <SevPill count={sevCount.medium} label="Med" color="bg-warn" />
-            <SevPill count={sevCount.low} label="Low" color="bg-ink-faint" />
-          </div>
-        )}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-        <div className="border border-rule rounded-xl px-5 py-4 bg-surface text-[13px] leading-[1.7] text-ink whitespace-pre-wrap font-sans">
-          {segments.map((seg, i) => {
-            if (seg.type === "text") return <span key={i}>{seg.text}</span>;
-            const isActive = activeFlagIdx === seg.flagIdx;
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() =>
-                  onSelect(isActive ? null : seg.flagIdx)
-                }
-                className={`underline decoration-2 underline-offset-2 cursor-pointer transition-colors px-0.5 rounded-sm ${flagClasses(seg.severity, isActive)}`}
-              >
-                {seg.text}
-              </button>
-            );
-          })}
-        </div>
-
-        <aside className="border border-rule rounded-xl bg-white p-4 text-[12px] sticky top-20 self-start">
+        <aside className="lg:sticky lg:top-24 self-start">
           {activeFlag ? (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
+            <div className="rounded-xl ring-1 ring-rule bg-white p-5 shadow-card">
+              <div className="flex items-center gap-2 mb-2.5">
                 <span
                   className={`w-2 h-2 rounded-full ${sevDotClass(activeFlag.severity)}`}
                 />
-                <span className="text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-muted">
-                  {prettyCategory(activeFlag.category)}
+                <span className="text-eyebrow text-ink-subtle">
+                  {prettyCategory(activeFlag.category)} ·{" "}
+                  {activeFlag.severity} severity
                 </span>
               </div>
-              <div className="font-semibold text-navy text-[13px] leading-snug mb-2 italic">
-                &ldquo;{truncate(activeFlag.phrase, 80)}&rdquo;
+              <div className="font-display text-[15px] text-navy font-semibold leading-snug mb-2">
+                &ldquo;{truncate(activeFlag.phrase, 90)}&rdquo;
               </div>
-              <div className="text-ink-muted leading-relaxed">
+              <p className="text-body text-ink-muted">
                 {activeFlag.why}
-              </div>
+              </p>
+              <button
+                type="button"
+                onClick={() => onSelect(null)}
+                className="mt-3 text-caption font-semibold text-purple hover:text-navy transition-colors no-print"
+              >
+                Close
+              </button>
             </div>
           ) : (
-            <div className="text-ink-muted leading-relaxed">
-              <div className="text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-faint mb-2">
-                Tap a highlight
-              </div>
-              {report.flags.length === 0
-                ? "No flags. Either this draft is genuinely clean, or the rubric for this program is permissive."
-                : "Each highlight is a phrase the pipeline flagged. Click one to see what category it triggered and why it matters at this program."}
-            </div>
+            <FlagIndex
+              flags={report.flags}
+              onSelect={onSelect}
+            />
           )}
         </aside>
       </div>
-    </section>
+    </Section>
+  );
+}
+
+function FlagIndex({
+  flags,
+  onSelect,
+}: {
+  flags: FlagAnnotation[];
+  onSelect: (i: number | null) => void;
+}) {
+  if (flags.length === 0) {
+    return (
+      <div className="rounded-xl ring-1 ring-rule-soft bg-surface p-5 text-body text-ink-muted">
+        Nothing flagged. Either this draft is genuinely clean, or the rubric
+        for this program is permissive.
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl ring-1 ring-rule-soft bg-white">
+      <div className="px-4 pt-3.5 pb-2 text-eyebrow text-ink-subtle">
+        Jump to flag
+      </div>
+      <ol className="divide-y divide-rule-soft max-h-[440px] overflow-y-auto">
+        {flags.map((f, i) => (
+          <li key={i}>
+            <button
+              type="button"
+              onClick={() => onSelect(i)}
+              className="w-full text-left px-4 py-2.5 hover:bg-purple-wash transition-colors flex items-start gap-2.5 no-print"
+            >
+              <span
+                className={`mt-[6px] w-1.5 h-1.5 rounded-full shrink-0 ${sevDotClass(f.severity)}`}
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-subtle mb-0.5">
+                  {prettyCategory(f.category)}
+                </span>
+                <span className="block text-caption text-navy font-medium truncate">
+                  &ldquo;{truncate(f.phrase, 60)}&rdquo;
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
@@ -528,19 +691,22 @@ function flagClasses(
   severity: FlagAnnotation["severity"],
   active: boolean,
 ): string {
+  // Editorial highlight — soft background fill with a thin underline accent,
+  // instead of loud colored text. Reads like a copy edit, not a terminal.
   const base =
     severity === "high"
-      ? "decoration-danger text-danger hover:bg-danger/10"
+      ? "bg-danger-tint/80 text-ink-strong [text-decoration:underline] decoration-danger/70 decoration-[1.5px] underline-offset-[3px] hover:bg-danger-tint"
       : severity === "medium"
-        ? "decoration-warn text-navy hover:bg-warn/10"
-        : "decoration-ink-faint text-ink hover:bg-surface";
-  const activeBg =
-    severity === "high"
-      ? "bg-danger/15"
+        ? "bg-warn-tint/80 text-ink-strong [text-decoration:underline] decoration-warn/70 decoration-[1.5px] underline-offset-[3px] hover:bg-warn-tint"
+        : "bg-surface-sunken text-ink-strong [text-decoration:underline] decoration-ink-faint/60 decoration-[1.5px] underline-offset-[3px] hover:bg-rule-soft";
+  const activeRing = active
+    ? severity === "high"
+      ? "ring-1 ring-danger/50 bg-danger-tint"
       : severity === "medium"
-        ? "bg-warn/20"
-        : "bg-rule";
-  return `${base} ${active ? activeBg : ""}`;
+        ? "ring-1 ring-warn/50 bg-warn-tint"
+        : "ring-1 ring-ink-faint/30 bg-rule-soft"
+    : "";
+  return `${base} ${activeRing}`;
 }
 
 function sevDotClass(s: FlagAnnotation["severity"]): string {
@@ -560,17 +726,24 @@ function countBySeverity(flags: FlagAnnotation[]) {
 function SevPill({
   count,
   label,
-  color,
+  tone,
 }: {
   count: number;
   label: string;
-  color: string;
+  tone: "danger" | "warn" | "muted";
 }) {
   if (count === 0) return null;
+  const cls =
+    tone === "danger"
+      ? "bg-danger-tint text-danger"
+      : tone === "warn"
+        ? "bg-warn-tint text-warn"
+        : "bg-surface-sunken text-ink-muted";
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className={`w-1.5 h-1.5 rounded-full ${color}`} />
-      <span className="num text-ink">{count}</span> {label}
+    <span
+      className={`inline-flex items-center gap-1 rounded-md px-1.5 py-[2px] text-[10px] uppercase tracking-[0.06em] font-semibold ${cls}`}
+    >
+      <span className="num">{count}</span> {label}
     </span>
   );
 }
@@ -600,42 +773,67 @@ function truncate(s: string, n: number): string {
 
 function MissingPanel({ report }: { report: ReviewReportType }) {
   const presentCount = report.missingItems.filter((i) => i.present).length;
+  const total = report.missingItems.length;
+  const missing = report.missingItems.filter((i) => !i.present);
   return (
-    <section className="border-b border-rule px-6 py-5">
-      <div className="flex items-baseline justify-between mb-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-faint font-semibold">
-            Expected elements at {report.programName}
-          </div>
-          <div className="text-[11px] text-ink-muted mt-0.5">
-            <span className="num text-navy font-semibold">
-              {presentCount}/{report.missingItems.length}
-            </span>{" "}
-            present in this draft
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
+    <Section
+      title="What admitted SOPs usually have"
+      meta={
+        <>
+          <span className="num font-semibold text-navy">
+            {presentCount}
+          </span>
+          <span className="text-ink-faint"> / </span>
+          <span className="num text-ink-muted">{total}</span> present in this
+          draft
+        </>
+      }
+    >
+      <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2.5">
         {report.missingItems.map((m, i) => (
-          <div key={i} className="flex items-start gap-2 text-[12px]">
-            <div className="pt-[3px] shrink-0">
-              {m.present ? (
-                <span className="text-success font-bold">✓</span>
-              ) : (
-                <span className="text-danger font-bold">×</span>
+          <li key={i} className="flex items-start gap-3">
+            <span
+              aria-hidden
+              className={`mt-[5px] shrink-0 w-[14px] h-[14px] rounded-full inline-flex items-center justify-center ${
+                m.present
+                  ? "bg-success text-white"
+                  : "bg-white ring-1 ring-rule-strong"
+              }`}
+            >
+              {m.present && (
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 8 8"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M1.5 4.2L3.2 5.8L6.5 2.2"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               )}
-            </div>
-            <div
-              className={
-                m.present ? "text-ink" : "text-ink-muted line-through"
-              }
+            </span>
+            <span
+              className={`text-body ${m.present ? "text-ink-strong" : "text-ink-muted"}`}
             >
               {m.label}
-            </div>
-          </div>
+            </span>
+          </li>
         ))}
-      </div>
-    </section>
+      </ul>
+      {missing.length > 0 && (
+        <p className="mt-5 text-caption text-ink-muted max-w-[640px]">
+          The missing items aren&apos;t mandatory, but admitted drafts at{" "}
+          <span className="text-navy font-medium">{report.programName}</span>{" "}
+          almost always earn at least one of them on the page.
+        </p>
+      )}
+    </Section>
   );
 }
 
@@ -644,38 +842,33 @@ function MissingPanel({ report }: { report: ReviewReportType }) {
 function ActionPlan({ report }: { report: ReviewReportType }) {
   if (!report.actionPlan || report.actionPlan.length === 0) return null;
   return (
-    <section className="border-b border-rule px-6 py-5 bg-purple-tint/30">
-      <div className="flex items-baseline justify-between mb-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-purple font-semibold">
-            What to fix tonight
-          </div>
-          <div className="text-[11px] text-ink-muted mt-0.5">
-            Three changes, in priority order. Start with #1.
-          </div>
-        </div>
-      </div>
+    <Section
+      title="The three things to fix next"
+      meta="Work in order. #1 moves the percentile most."
+    >
       <ol className="space-y-3">
         {report.actionPlan.map((item, i) => (
           <li
             key={i}
-            className="flex gap-3 bg-white border border-rule rounded-xl px-4 py-3 shadow-card"
+            className="flex gap-4 rounded-xl ring-1 ring-rule-soft bg-white px-5 py-4 hover:ring-purple-pale transition-colors"
           >
-            <div className="shrink-0 w-6 h-6 rounded-full bg-purple text-white font-display font-bold text-[12px] flex items-center justify-center num">
-              {i + 1}
+            <div className="shrink-0 flex flex-col items-center">
+              <div className="w-7 h-7 rounded-full bg-purple-wash ring-1 ring-purple-pale text-purple font-display font-bold text-[13px] flex items-center justify-center num">
+                {i + 1}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13px] text-navy font-semibold leading-snug">
+              <div className="text-[14px] text-navy font-semibold leading-snug tracking-tightish">
                 {item.action}
               </div>
-              <div className="text-[12px] text-ink-muted mt-1 leading-relaxed">
+              <div className="text-body text-ink-muted mt-1.5">
                 {item.why}
               </div>
             </div>
           </li>
         ))}
       </ol>
-    </section>
+    </Section>
   );
 }
 
@@ -683,26 +876,32 @@ function ActionPlan({ report }: { report: ReviewReportType }) {
 
 function CounselorCTA() {
   return (
-    <section className="border-b border-rule px-6 py-6 bg-navy text-white no-print">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-purple-pale font-semibold mb-1">
-            Once you&apos;ve revised
+    <section className="px-7 sm:px-9 py-7 border-t border-rule-soft bg-navy text-white no-print relative overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-purple/25 blur-3xl"
+      />
+      <div className="relative flex items-center justify-between gap-6 flex-wrap">
+        <div className="flex-1 min-w-0 max-w-[560px]">
+          <div className="eyebrow !text-purple-pale mb-2">
+            After you&apos;ve revised
           </div>
-          <div className="font-display text-[18px] font-bold tracking-tighter2 leading-tight">
+          <h2 className="font-display text-h3 font-bold tracking-tightish">
             Want a Leap counselor to read your next draft?
-          </div>
-          <div className="text-[12px] text-white/70 mt-1 leading-relaxed max-w-[520px]">
-            A real human who has reviewed thousands of SOPs at this exact program. Free 30-minute call, no pitch.
-          </div>
+          </h2>
+          <p className="text-body text-white/70 mt-2">
+            A human who has reviewed hundreds of SOPs at this exact program.
+            Free 30-minute call. No pitch, no pressure.
+          </p>
         </div>
         <a
           href="https://leapscholar.com/counsellors"
           target="_blank"
           rel="noreferrer noopener"
-          className="shrink-0 bg-purple hover:bg-white hover:text-purple text-white font-semibold text-[12px] uppercase tracking-[0.06em] px-4 py-2.5 rounded-lg transition-colors shadow-leap"
+          className="shrink-0 inline-flex items-center gap-2 bg-white hover:bg-purple-pale text-navy font-semibold text-caption px-5 py-3 rounded-lg transition-colors"
         >
-          Talk to a Leap counselor →
+          Book a free call
+          <span aria-hidden>→</span>
         </a>
       </div>
     </section>
@@ -712,30 +911,21 @@ function CounselorCTA() {
 // ── Footer ─────────────────────────────────────────────────
 
 function Footer({
-  report,
   onOpenMethodology,
 }: {
-  report: ReviewReportType;
   onOpenMethodology: () => void;
 }) {
   return (
-    <footer className="px-6 py-3 text-[10px] text-ink-faint flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-3">
-        {report.stageTimings.map((t, i) => (
-          <span key={i} className="inline-flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-purple" />
-            <span className="uppercase tracking-[0.06em] font-semibold">
-              {t.stage}
-            </span>
-            <span className="num text-ink-muted">{t.ms}ms</span>
-          </span>
-        ))}
+    <footer className="px-7 sm:px-9 py-5 text-micro text-ink-subtle flex items-center justify-between gap-4 flex-wrap border-t border-rule-soft">
+      <div className="max-w-[560px] leading-relaxed">
+        Scored against Leap&apos;s admitted-Indian-applicant baseline. No
+        draft data is stored.
       </div>
       <button
         onClick={onOpenMethodology}
-        className="text-purple hover:text-navy transition-colors font-semibold whitespace-nowrap"
+        className="text-purple hover:text-navy transition-colors font-semibold whitespace-nowrap no-print"
       >
-        How the pipeline works →
+        How the review works →
       </button>
     </footer>
   );

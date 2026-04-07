@@ -35,16 +35,16 @@ export function ReviewForm({ initial, onSubmit, loading }: Props) {
         e.preventDefault();
         if (canSubmit) onSubmit({ sopText, programId, studentName });
       }}
-      className="text-[13px] text-ink"
+      className="text-body text-ink-strong"
     >
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Student name" hint="Optional, for the handoff message">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Your name" hint="Optional">
           <input
             type="text"
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
-            placeholder="e.g. Aarav Mehta"
-            className="w-full border border-rule rounded-md px-3 py-2 focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/10 transition-shadow"
+            placeholder="Aarav Mehta"
+            className="w-full bg-white ring-1 ring-rule rounded-lg px-3.5 py-2.5 text-body placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-purple transition-shadow"
           />
         </Field>
 
@@ -52,14 +52,14 @@ export function ReviewForm({ initial, onSubmit, loading }: Props) {
           <select
             value={programId}
             onChange={(e) => setProgramId(e.target.value as ProgramId)}
-            className="w-full border border-rule rounded-md px-3 py-2 focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/10 bg-white appearance-none"
+            className="w-full bg-white ring-1 ring-rule rounded-lg px-3.5 py-2.5 text-body focus:outline-none focus:ring-2 focus:ring-purple appearance-none"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235A6473' d='M6 8 0 0h12z'/%3E%3C/svg%3E\")",
               backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 12px center",
+              backgroundPosition: "right 14px center",
               backgroundSize: "10px",
-              paddingRight: "32px",
+              paddingRight: "36px",
             }}
           >
             {PROGRAM_OPTIONS.map((o) => (
@@ -72,44 +72,51 @@ export function ReviewForm({ initial, onSubmit, loading }: Props) {
       </div>
 
       <Field
-        label="Statement of Purpose"
-        hint={`${wordCount} words${wordCount > 0 && wordCount < 80 ? " — need at least 80" : ""}`}
+        label="Your Statement of Purpose"
+        hint={
+          <span className="num">
+            {wordCount} words
+            {wordCount > 0 && wordCount < 80 && (
+              <span className="text-warn"> · need 80+</span>
+            )}
+          </span>
+        }
       >
         <textarea
           value={sopText}
           onChange={(e) => setSopText(e.target.value)}
-          placeholder="Paste the SOP draft here. The reviewer works best on full drafts (500-1000 words)."
+          placeholder="Paste your full draft here. The reviewer works best on 500–1000 word drafts."
           rows={14}
-          className="w-full border border-rule rounded-md px-3 py-2.5 focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/10 font-sans text-[13px] leading-relaxed resize-y"
+          className="w-full bg-white ring-1 ring-rule rounded-lg px-4 py-3 font-sans text-body leading-[1.7] text-ink-strong placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-purple resize-y transition-shadow"
         />
       </Field>
 
       <button
         type="submit"
         disabled={!canSubmit}
-        className="w-full mt-2 bg-purple text-white text-[14px] font-semibold py-3 rounded-md hover:bg-navy disabled:bg-purple/50 disabled:cursor-not-allowed transition-colors shadow-leap"
+        className="w-full mt-3 bg-purple text-white text-[15px] font-semibold py-3.5 rounded-lg hover:bg-navy disabled:bg-purple/40 disabled:cursor-not-allowed transition-colors shadow-leap"
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
-            <Spinner /> Running review pipeline…
+            <Spinner /> Reviewing your draft…
           </span>
         ) : (
-          "Review this SOP"
+          "Review my SOP"
         )}
       </button>
 
-      <div className="border-t border-rule mt-6 pt-5">
-        <div className="text-[11px] text-ink-muted text-center mb-2.5">
+      <div className="border-t border-rule-soft mt-7 pt-5">
+        <div className="text-caption text-ink-subtle text-center mb-3">
           No draft handy? Try a sample
         </div>
-        <div className="flex flex-wrap gap-1.5 justify-center">
+        <div className="flex flex-wrap gap-2 justify-center">
           {sampleSops.map((s) => (
             <button
               type="button"
               key={s.id}
               onClick={() => loadSample(s.id)}
               disabled={loading}
-              className="text-[11px] px-2.5 py-1 border border-rule rounded-md text-ink-muted hover:border-purple hover:text-purple disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-caption px-3 py-1.5 ring-1 ring-rule rounded-full text-ink-muted hover:text-purple hover:ring-purple-pale hover:bg-purple-wash disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {s.label}
             </button>
@@ -126,20 +133,14 @@ function Field({
   children,
 }: {
   label: string;
-  hint?: string;
+  hint?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block mb-3.5">
-      <div className="flex items-baseline justify-between mb-1">
-        <div className="text-[11px] uppercase tracking-[0.06em] text-navy font-semibold">
-          {label}
-        </div>
-        {hint && (
-          <div className="text-[10px] text-ink-faint normal-case tracking-normal num">
-            {hint}
-          </div>
-        )}
+    <label className="block mb-4 last-of-type:mb-0">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="text-caption text-navy font-semibold">{label}</div>
+        {hint && <div className="text-micro text-ink-faint">{hint}</div>}
       </div>
       {children}
     </label>
