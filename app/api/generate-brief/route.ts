@@ -98,7 +98,6 @@ export async function POST(request: Request) {
         profile,
         u,
         score.admitProbability,
-        score.cohortSizeApprox,
       ),
       rationale,
     };
